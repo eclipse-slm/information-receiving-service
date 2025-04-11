@@ -1,0 +1,13 @@
+FastAPI~=0.110.0
+uvicorn[standard]~=0.28.0
+requests
+requests-oauthlib==2.0.0
+setuptools
+pydantic~=2.8.2
+typing_extensions~=4.12.2
+python-dateutil~=2.9.0.post0
+urllib3 >= 1.25.3, < 2.1.0
+python-dotenv~=1.0.1
+basyx-python-sdk==1.1.0
+aas-python-http-client==1.0.2
+pycouchdb==1.16.0

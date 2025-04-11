@@ -1,0 +1,16 @@
+services:
+  irs-base:
+    image: ghcr.io/eclipse-slm/information-receiving-service/base:${VERSION}
+    build:
+      context: .
+      dockerfile: docker/Dockerfile-base
+
+  irs-poller:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile-poller
+
+  irs-api:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile-api
