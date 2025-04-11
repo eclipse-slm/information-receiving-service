@@ -1,0 +1,40 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - release/*
+      - feature/*
+      - fix/*
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build base image
+        run: docker compose -f docker-compose.yml -f docker-compose-build.yml  build --no-cache irs-base
+
+      - name: Build service images
+        run: docker compose -f docker-compose.yml -f docker-compose-build.yml  build --no-cache irs-poller irs-api
+
+      - name: Login to Docker Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{github.actor}}
+          password: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Push docker images
+        run: docker compose push
