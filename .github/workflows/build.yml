@@ -37,4 +37,4 @@ jobs:
           password: ${{secrets.GITHUB_TOKEN}}
 
       - name: Push docker images
-        run: docker compose push
+        run: docker -f docker-compose.yml -f docker-compose-build.yml compose push
