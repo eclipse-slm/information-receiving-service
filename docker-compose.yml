@@ -1,18 +1,17 @@
 services:
   irs-poller:
     image: ghcr.io/eclipse-slm/information-receiving-service/poller:${VERSION}
+    restart: always
     environment:
-      COUCHDB_HOST: ${COUCHDB_HOST}
       POLLING_WHITE_LIST:
     volumes:
       - ./config.yml:/app/config.yml
 
   irs-api:
     image: ghcr.io/eclipse-slm/information-receiving-service/api:${VERSION}
+    restart: always
     ports:
       - "3000:${SERVICE_PORT}"
-    environment:
-      COUCHDB_HOST: ${COUCHDB_HOST}
     volumes:
       - ./config.yml:/app/config.yml
 
