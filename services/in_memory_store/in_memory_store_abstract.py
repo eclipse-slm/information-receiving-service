@@ -76,6 +76,7 @@ class AbstractInMemoryStore(ABC, BaseFeedReader):
         """
         item = self._db_client.get_doc(id)
         if item:
+            self._remove_item_from_store(id)
             self.store.append(
                 convert_dict_keys_to_camel_case(item['data'])
             )
