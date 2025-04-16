@@ -25,6 +25,6 @@ class InMemoryStoreSubmodels(AbstractInMemoryStore):
 
     def submodel(self, identifier: str):
         for submodel in self.store:
-            if submodel.id == identifier:
+            if submodel['id'] == identifier:
                 return submodel
         return None
