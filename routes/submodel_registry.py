@@ -28,7 +28,7 @@ def get_submodel_descriptors(aas_server_name: str = None):
     submodel_descriptors = in_memory_store.get_submodel_descriptors_by_aas_server_name(aas_server_name)
 
     return Response(
-        content=get_paged_result_json(submodel_descriptors),
+        content=get_paged_result_json(submodel_descriptors, None),
         media_type="application/json"
     )
 
