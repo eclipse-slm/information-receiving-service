@@ -26,19 +26,19 @@ class CouchDBClient(ABC):
 
     def __init__(self, database_name: str = None, client_name: str = "default-client"):
         self.client_name: str = client_name
+        self.database_name: str = database_name
         self._host: str = os.getenv('COUCHDB_HOST')
         self._port: str = os.getenv('COUCHDB_PORT')
         self._username: str = os.getenv('COUCHDB_USERNAME')
         self._password: str = os.getenv('COUCHDB_PASSWORD')
         self._server: Server = Server(base_url=self.base_url_with_creds, authmethod="basic")
-        self._database_name: str = database_name
         self._db: Database = None
         self._max_count_bulk_save = 25000
 
     @property
     def db(self):
         if self._db is None:
-            self._db = self._server.database(self._database_name)
+            self._db = self._server.database(self.database_name)
         return self._db
 
 
@@ -77,7 +77,7 @@ class CouchDBClient(ABC):
 
     def create_db(self):
         try:
-            self._server.create(self._database_name)
+            self._server.create(self.database_name)
         except Exception as e:
             pass
             # print(f"Database \"{self._database_name}\" exists already | Skip create: {e}")
@@ -103,7 +103,7 @@ class CouchDBClient(ABC):
         except Conflict:
             pass
         except Exception as e:
-            print(f"Error saving document to \"{self._database_name}\": {e}")
+            print(f"Error saving document to \"{self.database_name}\": {e}")
             return None
 
     def save_docs(self, docs: list[dict]):
@@ -113,7 +113,7 @@ class CouchDBClient(ABC):
         except Conflict as e:
             pass
         except Exception as e:
-            print(f"Error saving documents to \"{self._database_name}\": {e}")
+            print(f"Error saving documents to \"{self.database_name}\": {e}")
 
 
     def save_entities(self, entities: list[object]):
@@ -137,14 +137,14 @@ class CouchDBClient(ABC):
         for thread in threads:
             thread.start()
 
-        self._log(f"Started {len(threads)} thread(s) to save {total_entity_count} entities into {self._database_name}.")
+        self._log(f"Started {len(threads)} thread(s) to save {total_entity_count} entities into {self.database_name}.")
 
         for thread in threads:
             thread.join()
         end = time.time()
         elapsed = end - start
 
-        self._log(f"Finished {len(threads)} thread(s) to save {total_entity_count} entititis into {self._database_name} in {elapsed:.2f} seconds.")
+        self._log(f"Finished {len(threads)} thread(s) to save {total_entity_count} entititis into {self.database_name} in {elapsed:.2f} seconds.")
 
 
     def _save_entity_list(self, entity_list: list[object]):
