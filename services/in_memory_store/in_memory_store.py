@@ -51,10 +51,10 @@ class InMemoryStore:
                 return store
         return None
 
-    def _get_start_end_cursor(self, shell_descriptors: List[dict], limit: int, cursor: str):
+    def _get_start_end_cursor(self, aas_objects: List[dict], limit: int, cursor: str):
         start = int(cursor) if cursor is not None else 0
         end = start + limit
-        new_cursor = str(end) if end < len(shell_descriptors) else None
+        new_cursor = str(end) if end < len(aas_objects) else None
         return start, end, new_cursor
 
     @property
@@ -74,7 +74,6 @@ class InMemoryStore:
         if limit == -1:
             return shell_descriptors, None
         return shell_descriptors[start:end], new_cursor
-
 
 
     def shell_descriptor(self, identifier: str) -> AssetAdministrationShellDescriptor:
@@ -124,6 +123,19 @@ class InMemoryStore:
     @property
     def submodels(self) -> List[Submodel]:
         return self._get_store(InMemoryStoreSubmodels).store
+
+
+    def get_submodels_by_aas_server_name(self, aas_server_name:str, limit: int, cursor: str) -> List[AssetAdministrationShell]:
+        if aas_server_name is None:
+            submodels = self.submodels
+        else:
+            submodels_by_server_name, cursor = self.get_submodel_descriptors_by_aas_server_name(aas_server_name, -1, "0")
+            submodel_descriptor_ids_by_server_name = [descriptor['id'] for descriptor in submodels_by_server_name]
+            submodels = self._get_store(InMemoryStoreSubmodels).get_store_filtered(submodel_descriptor_ids_by_server_name)
+
+        start, end, new_cursor = self._get_start_end_cursor(submodels, limit, cursor)
+
+        return submodels[start:end], new_cursor
 
 
     def submodel(self, identifier: str) -> Submodel:
