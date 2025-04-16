@@ -84,5 +84,6 @@ def get_asset_administration_shell(aasIdentifier: str):
     submodel_references_dict = [ref.to_dict() for ref in submodel_references]
 
     return get_paged_result_object(
-        submodel_references_dict
+        submodel_references_dict,
+        None
     )
