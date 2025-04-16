@@ -7,6 +7,14 @@ class SubmodelHandler:
         self.in_memory_store = InMemoryStore()
         self._app_config: AppConfig = load_config()
 
+    def get_submodels_value_only(self, submodels):
+        submodels_value_only = []
+        for submodel in submodels:
+            r = self.convert_submodel_to_value_only(submodel)
+            if r is not None:
+                submodels_value_only.append(r)
+        return submodels_value_only
+
     def get_submodel(self, identifier: str):
         submodel = self.in_memory_store.submodel(identifier)
 
@@ -14,6 +22,56 @@ class SubmodelHandler:
             submodel = self._get_submodel_from_remote(identifier)
 
         return submodel
+
+    def get_submodel_value_only(self, identifier: str):
+        submodel = self.get_submodel(identifier)
+        return self.convert_submodel_to_value_only(submodel)
+
+    def convert_submodel_to_value_only(self, submodel):
+        submodel_value_only = {}
+        if submodel is None:
+            return None
+
+        try:
+            for submodel_element in submodel['submodelElements']:
+                key = submodel_element['idShort']
+                value = self.get_submodel_element_value_only(submodel_element)
+                if value is not None:
+                    submodel_value_only[key] = value
+        except KeyError as e:
+            return None
+
+        return submodel_value_only
+
+
+    def get_submodel_element_value_only(self, submodel_element):
+        try:
+            value = submodel_element['value']
+        except KeyError as e:
+            return None
+
+        if submodel_element['modelType'] == 'SubmodelElementList':
+            se_list = []
+            for v in value:
+                se_list.append(self.get_submodel_element_value_only(v))
+            return se_list
+        elif submodel_element['modelType'] == 'SubmodelElementCollection':
+            se_collection = {}
+            for v in value:
+                se_collection[v['idShort']] = self.get_submodel_element_value_only(v)
+            return se_collection
+        elif submodel_element['modelType'] == 'MultiLanguageProperty':
+            mlp_list = []
+            for v in value:
+                mlp_list.append({v['language']: v['text']})
+            return mlp_list
+        else:
+            if submodel_element['value'] is not None:
+                return value
+
+        return None
+
+
 
     def _get_submodel_from_remote(self, identifier: str):
         submodel_descriptor = self.in_memory_store.submodel_descriptor(identifier)
