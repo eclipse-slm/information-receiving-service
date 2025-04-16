@@ -36,7 +36,9 @@ class SubmodelHandler:
 
     def _get_urls_from_submodel_descriptor(self, submodel_descriptor):
         urls = []
-        for endpoint in submodel_descriptor['endpoints']:
-            if endpoint['protocolInformation']['href']:
-                urls.append(endpoint['protocolInformation']['href'])
+
+        if submodel_descriptor:
+            for endpoint in submodel_descriptor['endpoints']:
+                if endpoint['protocolInformation']['href']:
+                    urls.append(endpoint['protocolInformation']['href'])
         return urls
