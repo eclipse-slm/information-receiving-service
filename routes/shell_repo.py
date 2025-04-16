@@ -1,8 +1,9 @@
 import json
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from starlette.responses import Response
 
+from routes.routes_utils import decode_id
 from services import aas_utils
 from services.aas_utils import extract_submodel_references_from_shell_descriptor, get_paged_result_object, \
     get_paged_result_json
@@ -67,19 +68,27 @@ def get_asset_administration_shell(aasIdentifier: str, cached: bool = True):
     #     descriptor = get_remote_shell_descriptor(aas_id_dec)
     #     shell = convert_shell_descriptor_to_shell(descriptor)
     #     return shell.to_dict()
-    aas_id_dec = aas_utils.decode_id(aasIdentifier)
+    aas_id_dec = decode_id(aasIdentifier)
+
+    shell = in_memory_store.shell(identifier=aas_id_dec)
+    if shell is None:
+        raise HTTPException(status_code=404, detail="Shell not found")
+
     return Response(
-        content=json.dumps(in_memory_store.shell(identifier=aas_id_dec)),
+        content=json.dumps(),
         media_type="application/json"
     )
 
 @router.get(path="/shells/{aasIdentifier}/submodel-refs", status_code=200, description="Returns all submodel references")
 def get_asset_administration_shell(aasIdentifier: str):
-    aas_id_dec = aas_utils.decode_id(aasIdentifier)
+    # aas_id_dec = aas_utils.decode_id(aasIdentifier)
     # descriptor = get_remote_shell_descriptor(aas_id_dec)
 
-    aas_id_dec = aas_utils.decode_id(aasIdentifier)
+    aas_id_dec = decode_id(aasIdentifier)
     shell_descriptor = in_memory_store.shell_descriptor(identifier=aas_id_dec)
+    if shell_descriptor is None:
+        raise HTTPException(status_code=404, detail="Related shell descriptor not found")
+
     submodel_references = extract_submodel_references_from_shell_descriptor(shell_descriptor)
     submodel_references_dict = [ref.to_dict() for ref in submodel_references]
 

@@ -1,9 +1,10 @@
 from aas_python_http_client import SubmodelDescriptor, ApiClient
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from starlette.responses import Response
 
+from routes.routes_utils import decode_id
 from routes.shell_registry import in_memory_store
-from services.aas_utils import decode_id, get_paged_result_object, get_paged_result_json
+from services.aas_utils import get_paged_result_json
 from services.in_memory_store.in_memory_store import InMemoryStore
 
 router = APIRouter(prefix="/api/submodel_registry", tags=["submodel_registry"])
@@ -54,5 +55,11 @@ def get_submodel_descriptor(submodelIdentifier: str):
     # return convert_dict_keys_to_camel_case(
     #     submodel_descriptor.to_dict()
     # )
-    submodel_descriptor = in_memory_store.submodel_descriptor(decode_id(submodelIdentifier))
+    id = decode_id(submodelIdentifier)
+
+    submodel_descriptor = in_memory_store.submodel_descriptor(id)
+
+    if submodel_descriptor is None:
+        raise HTTPException(status_code=404, detail="Submodel descriptor not found")
+
     return submodel_descriptor

@@ -35,7 +35,7 @@ def get_submodel(submodelIdentifier: str, cached: bool = True):
     submodel = submodel_handler.get_submodel(decoded_id)
 
     if submodel is None:
-        raise HTTPException(status_code=404, detail="Item not found")
+        raise HTTPException(status_code=404, detail="Submodel not found")
 
     return submodel
 
