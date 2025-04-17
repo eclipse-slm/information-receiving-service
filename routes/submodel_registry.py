@@ -2,7 +2,7 @@ from aas_python_http_client import SubmodelDescriptor, ApiClient
 from fastapi import APIRouter, HTTPException
 from starlette.responses import Response
 
-from routes.routes_utils import decode_id
+from services.aas_utils import decode_id
 from routes.shell_registry import in_memory_store
 from services.aas_utils import get_paged_result_json
 from services.in_memory_store.in_memory_store import InMemoryStore

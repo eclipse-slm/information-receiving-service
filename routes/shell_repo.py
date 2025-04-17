@@ -3,8 +3,7 @@ import json
 from fastapi import APIRouter, HTTPException
 from starlette.responses import Response
 
-from routes.routes_utils import decode_id
-from services import aas_utils
+from services.aas_utils import decode_id
 from services.aas_utils import extract_submodel_references_from_shell_descriptor, get_paged_result_object, \
     get_paged_result_json
 from services.in_memory_store.in_memory_store import InMemoryStore
