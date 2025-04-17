@@ -1,9 +1,7 @@
-import binascii
-
 from fastapi import APIRouter, HTTPException
 from starlette.responses import Response
 
-from services.aas_utils import decode_id
+from routes.routes_utils import decode_id
 from services.aas_utils import get_paged_result_json
 from services.in_memory_store.in_memory_store import InMemoryStore
 from services.submodel_handler import SubmodelHandler
