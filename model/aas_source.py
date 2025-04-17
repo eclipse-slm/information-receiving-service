@@ -11,6 +11,7 @@ from services.aas_utils import encode_id
 
 
 class AasSource(BaseModel):
+    polling_interval_s: int = -1
     _limit: int = 45000
 
 

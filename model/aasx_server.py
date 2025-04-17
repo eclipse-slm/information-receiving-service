@@ -18,8 +18,6 @@ class AasxServer(AasSource):
     discovery_url: Optional[str] = Field(alias="discovery-url", default=None)
     version: Optional[str] = Field(alias="version", default=None)
     auth: Union[Oauth2AuthMethod, ApiKeyAuthMethod, CustomOAuthMethod]
-    polling_interval_s: int = -1
-
 
     @property
     def api_client(self):
