@@ -27,7 +27,10 @@ class AasxServerPoller:
     def __init__(self, aasx_server: AasxServer):
         self.aasx_server: AasxServer = aasx_server
         # self._aas_obj_store: CrawlerCouchDBObjectStore = aas_obj_store
-        self._sleep_time_in_s: int = 60
+        if aasx_server.polling_interval_s != -1:
+            self._sleep_time_in_s: int = int(self.aasx_server.polling_interval_s)
+        else:
+            self._sleep_time_in_s: int = 60
         self._stop_polling: bool = False
         self._couchdb_shell_descriptor_client = CouchDBShellDescriptorClient(client_name=self.aasx_server.name)
         self._couchdb_shell_client = CouchDBShellClient()

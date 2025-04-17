@@ -13,18 +13,19 @@ Create config file "config.yml" and place in same folder as docker-compose.yml. 
 aas-servers:
   - name: "AASX Server 1"                           # choose as you like
     url: "https://example-1.com/aasx-server-1"      # base URL of AASX Server
+    polling_interval_s: 60                          # interval in seconds for polling the server (optional, default: 60 s)
     auth:
       auth-type: oauth2 | apikey | custom-oauth     # chose one of the auth types
       # if oauth2:
-      client-id: "your-client-id"                  # client id for oauth2
-      client-secret: "your-client-secret"          # client secret for oauth2
-      token-url: "https://example-1.com/token"     # token URL for oauth2
+      client-id: "your-client-id"                   # client id for oauth2
+      client-secret: "your-client-secret"           # client secret for oauth2
+      token-url: "https://example-1.com/token"      # token URL for oauth2
       # if apikey:
-      api-key: "your-api-key"                      # API key for AASX Server
+      api-key: "your-api-key"                       # API key for AASX Server
       # if custom-oauth:
-      client-id: "your-client-id"                  # client id for custom oauth
-      secret: "your-secret"                        # secret for custom oauth
-      login-url: "https://example-1.com/login"     # login URL for custom oauth
+      client-id: "your-client-id"                   # client id for custom oauth
+      secret: "your-secret"                         # secret for custom oauth
+      login-url: "https://example-1.com/login"      # login URL for custom oauth
   - name: "AASX Server 2"
     url: "https://example-2.com/aasx-server-2"
     auth:
