@@ -74,7 +74,7 @@ def get_asset_administration_shell(aasIdentifier: str, cached: bool = True):
         raise HTTPException(status_code=404, detail="Shell not found")
 
     return Response(
-        content=json.dumps(),
+        content=json.dumps(shell),
         media_type="application/json"
     )
 
