@@ -1,16 +1,41 @@
 import os
+from typing import Union, List, Any
 
 import yaml
 from dotenv import load_dotenv
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator, ValidationError
 
+from model.aas_services import AasServices
 from model.aasx_server import AasxServer
 
 load_dotenv()
 
+aas_source_classes = [AasxServer, AasServices]
 
 class AppConfig(BaseModel):
-    aas_servers: list[AasxServer] = Field(alias = "aas-servers")
+    aas_servers: List[Union[tuple(aas_source_classes)]] = Field(alias = "aas-servers")
+
+    @model_validator(mode="before")
+    @classmethod
+    def check_integrity_of_source_configs(cls, data: Any):
+        aas_sources = {"aas-servers": []}
+        for source_dict in data['aas-servers']:
+            if cls._is_instance_of_aas_source(source_dict):
+                aas_sources['aas-servers'].append(source_dict)
+            else:
+                continue
+                # print(f"Invalid AAS source configuration of entry with name: {source_dict['name']} | Ignoring configuration")
+        return aas_sources
+
+    @classmethod
+    def _is_instance_of_aas_source(cls, source_dict: dict) -> bool:
+        for aas_source_class in aas_source_classes:
+            try:
+                aas_source_class(**source_dict)
+                return True
+            except ValidationError:
+                continue
+        return False
 
 
 def load_config() -> AppConfig:
