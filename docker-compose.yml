@@ -15,6 +15,12 @@ services:
     volumes:
       - ./config.yml:/app/config.yml
 
+  irs-gc:
+    image: ghcr.io/eclipse-slm/information-receiving-service/gc:${VERSION}
+    restart: always
+    volumes:
+      - ./config.yml:/app/config.yml
+
   couch-db:
     image: couchdb:3.2
     restart: always

@@ -14,3 +14,8 @@ services:
     build:
       context: ./docker
       dockerfile: Dockerfile-api
+
+  irs-gc:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile-gc
