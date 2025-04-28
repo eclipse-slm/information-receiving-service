@@ -31,6 +31,12 @@ aas-servers:
     auth:
       # see example 1 from above
       ...
+  - name: "AAS Services 1"
+    urls:
+      shell-registry: "https://shell-registry.local"            # base URL of (remote) Shell Registry
+      shell-repository: "https://shell-repository.local"        # base URL of (remote) Shell Repository
+      submodel-registry: "https://submodel-registry.local"      # base URL of (remote) Submodel Registry
+      submodel-repository: "https://submodel-repository.local"  # base URL of (remote) Submodel Repository
 ```
 
 ### Start IRS (Information Receiving Service)
