@@ -55,3 +55,6 @@ class CouchDBShellDescriptorClient(CouchDBClient):
             except IndexError:
                 break;
         return descriptors
+
+    def delete_shell_descriptor(self, aas_identifier: str):
+        self.delete_doc(doc_id=aas_identifier)

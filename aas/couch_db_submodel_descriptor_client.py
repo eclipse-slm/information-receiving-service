@@ -58,3 +58,6 @@ class CouchDBSubmodelDescriptorClient(CouchDBClient):
 
     def save_submodel_descriptors(self, descriptors: list[SubmodelDescriptor]):
         self.save_entities(descriptors)
+
+    def delete_submodel_descriptor(self, sm_identifier: str):
+        self.delete_doc(doc_id=sm_identifier)

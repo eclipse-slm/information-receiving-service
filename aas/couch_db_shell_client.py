@@ -27,6 +27,9 @@ class CouchDBShellClient(CouchDBClient):
     def save_shells(self, shells: List[Dict]):
         self.save_entities(shells)
 
+    def delete_shell(self, aas_identifier: str):
+        self.delete_doc(doc_id=aas_identifier)
+
 
     def _log(self, message: str):
         self.log.info(f"{self.__class__.__name__} | {message}")

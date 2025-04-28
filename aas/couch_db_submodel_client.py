@@ -48,6 +48,9 @@ class CouchDBSubmodelClient(CouchDBClient):
 
         self.save_docs(docs=docs)
 
+    def delete_submodel(self, sm_identifier: str):
+        self.delete_doc(doc_id=sm_identifier)
+
 
     def _log(self, message: str):
         self.log.info(f"{self.__class__.__name__} | {message}")
