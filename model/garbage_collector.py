@@ -19,7 +19,7 @@ class GarbageCollector:
 
     def __init__(self):
         self._run_garbage_collecting: bool = True
-        self._latest_aas_sources= List = []
+        self._latest_aas_sources: List = []
         self._couchdb_shell_descriptor_client = CouchDBShellDescriptorClient(client_name=self.__class__.__name__)
         self._couchdb_shell_client = CouchDBShellClient()
         self._couchdb_submodel_descriptor_client = CouchDBSubmodelDescriptorClient(client_name=self.__class__.__name__)
