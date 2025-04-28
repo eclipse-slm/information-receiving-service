@@ -5,6 +5,7 @@ from enum import Enum
 import requests
 from oauthlib.oauth2 import BackendApplicationClient
 from pydantic import BaseModel, Field
+from requests import ConnectTimeout
 from requests_oauthlib import OAuth2Session
 
 
@@ -74,9 +75,12 @@ class CustomOAuthMethod(AuthMethod, BaseModel):
 
     @property
     def auth_header(self) -> dict:
-        return {
-            "Authorization": f"Bearer {self.token}"
-        }
+        if self.token:
+            return {
+                "Authorization": f"Bearer {self.token}"
+            }
+        else:
+            raise ValueError("Token is not available. Please check your credentials or login URL.")
 
     @property
     def token(self) -> str:
@@ -84,5 +88,8 @@ class CustomOAuthMethod(AuthMethod, BaseModel):
             "clientId": self.client_id,
             "secret": self.secret
         }
-        response = requests.request("POST", self.login_url, json=payload)
-        return response.json()["token"]
+        try:
+            response = requests.request("POST", self.login_url, json=payload)
+            return response.json()["token"]
+        except (KeyError, ValueError, ConnectTimeout):
+            return None
