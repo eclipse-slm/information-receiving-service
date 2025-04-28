@@ -1,10 +1,12 @@
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Any
 
 from aas_python_http_client import ApiClient, AssetAdministrationShellRegistryAPIApi, Configuration, \
     SubmodelRegistryAPIApi, \
     AssetAdministrationShellRepositoryAPIApi, \
     SubmodelRepositoryAPIApi
-from pydantic import Field
+from pydantic import Field, model_validator
+from pydantic.v1 import root_validator
+from typing_extensions import Self
 
 from model.aas_source import AasSource
 from model.auth import Oauth2AuthMethod, ApiKeyAuthMethod, CustomOAuthMethod
@@ -19,17 +21,37 @@ class AasxServer(AasSource):
     version: Optional[str] = Field(alias="version", default=None)
     auth: Union[Oauth2AuthMethod, ApiKeyAuthMethod, CustomOAuthMethod]
 
+    @model_validator(mode="after")
+    def check_auth(self) -> Self:
+        self.auth.auth_header
+        return self
+
+
     @property
-    def api_client(self):
-        configuration = Configuration()
-        configuration.host = self.url
+    def api_client(self) -> ApiClient:
         auth_header_key = next(iter(self.auth.auth_header))
         auth_header_value = self.auth.auth_header[auth_header_key]
         return ApiClient(
-            configuration=configuration,
+            configuration=self.api_configuration(self.url),
             header_name=auth_header_key,
             header_value=auth_header_value
         )
+
+    @property
+    def shell_registry_base_url(self) -> str:
+        return self.url
+
+    @property
+    def shell_repository_base_url(self) -> str:
+        return self.url
+
+    @property
+    def submodel_registry_base_url(self) -> str:
+        return self.url
+
+    @property
+    def submodel_repository_base_url(self) -> str:
+        return self.url
 
 
     @property
