@@ -150,15 +150,16 @@ class CouchDBClient(ABC):
     def _save_entity_list(self, entity_list: list[object]):
         docs = []
         for entity in entity_list:
-            ## Diff with descriptor from DB
+            ## Diff with doc from DB
             if isinstance(entity, dict):
                 id = entity['id']
             else:
                 id = entity.id
 
-            current_entity = self.get_doc(id)
+            doc = self.get_doc(id)
+            current_entity = None if doc is None else doc['data']
             is_equal = None
-            # Check if current descriptor is equal to new descriptor:
+            # Check if current entity is equal to new entity:
             if current_entity is not None:
                 is_equal = self._equals(current_entity, entity)
                 # continue if current descriptor is equal to the new descriptor
@@ -174,12 +175,18 @@ class CouchDBClient(ABC):
                 "data": data
             }
 
-            # add rev to payload to update if new descriptor diffs from current descriptor
+            # add rev to payload to update if new entity diffs from current entity
             if is_equal is not None and not is_equal:
                 payload['_rev'] = self.get_doc_rev(id)
             docs.append(payload)
 
         self.save_docs(docs=docs)
+
+
+    def delete_doc(self, doc_id: str):
+        doc_id_quoted = urllib.parse.quote(doc_id, safe='')
+        self.db.delete(doc_id_quoted)
+
 
     def _equals(self, a: object, b: object) -> bool:
         """
