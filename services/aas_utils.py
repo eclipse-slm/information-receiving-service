@@ -216,10 +216,10 @@ def get_paged_result_object(result: List, cursor: str, convert_to_camel_case: bo
     }
 
 def get_paged_result_json(result: List, cursor: str, convert_to_camel_case: bool = False) -> str:
-    return json.dumps(
-        get_paged_result_object(
-            result,
-            cursor,
-            convert_to_camel_case
-        )
+    paged_result = get_paged_result_object(
+        result,
+        cursor,
+        convert_to_camel_case
     )
+
+    return json.dumps(paged_result)

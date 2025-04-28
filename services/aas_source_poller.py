@@ -3,6 +3,7 @@ import logging
 import threading
 import time
 from time import sleep
+from typing import List
 
 from aas_python_http_client import Endpoint, ProtocolInformation
 from basyx.aas.adapter.json import AASToJsonEncoder
@@ -14,31 +15,31 @@ from aas.couch_db_shell_descriptor_client import CouchDBShellDescriptorClient
 from aas.couch_db_submodel_client import CouchDBSubmodelClient
 from aas.couch_db_submodel_descriptor_client import CouchDBSubmodelDescriptorClient
 from logger.logger import set_basic_config
-from model.aasx_server import AasxServer
+from model.aas_services import AasServices
+from model.aas_source import AasSource
 from services.aas_utils import get_base_url, get_base_url_shell_repo, encode_id, get_base_url_submodel_repo
 
 # Configure logging
 set_basic_config()
 
 
-class AasxServerPoller:
+class AasSourcePoller:
     log = logging.getLogger(__name__)
 
-    def __init__(self, aasx_server: AasxServer):
-        self.aasx_server: AasxServer = aasx_server
-        # self._aas_obj_store: CrawlerCouchDBObjectStore = aas_obj_store
-        if aasx_server.polling_interval_s != -1:
-            self._sleep_time_in_s: int = int(self.aasx_server.polling_interval_s)
+    def __init__(self, aas_source: AasSource):
+        self.aas_source: AasSource = aas_source
+        if aas_source is not None and aas_source.polling_interval_s != -1:
+            self._sleep_time_in_s: int = int(self.aas_source.polling_interval_s)
         else:
             self._sleep_time_in_s: int = 60
         self._stop_polling: bool = False
-        self._couchdb_shell_descriptor_client = CouchDBShellDescriptorClient(client_name=self.aasx_server.name)
+        self._couchdb_shell_descriptor_client = CouchDBShellDescriptorClient(client_name=self.aas_source.name)
         self._couchdb_shell_client = CouchDBShellClient()
-        self._couchdb_submodel_descriptor_client = CouchDBSubmodelDescriptorClient(client_name=self.aasx_server.name)
+        self._couchdb_submodel_descriptor_client = CouchDBSubmodelDescriptorClient(client_name=self.aas_source.name)
         self._couchdb_submodel_client = CouchDBSubmodelClient()
-        self._polling_thread: threading.Thread = threading.Thread(target=self.do_polling)
+        self._initiator_thread: threading.Thread = threading.Thread(target=self.do_polling)
 
-        self._polling_thread.start()
+        self._initiator_thread.start()
 
     def _specific_asset_id_serializer(self, obj):
         if isinstance(obj, SpecificAssetId) or isinstance(obj, ExternalReference):
@@ -55,21 +56,33 @@ class AasxServerPoller:
 
             self._log(f"Restart in {self._sleep_time_in_s} seconds...")
             sleep(self._sleep_time_in_s)
+        self._log("Polling finished")
 
-    def create_polling_threads(self, poll_descriptors: bool = True, poll_shells: bool = True, poll_submodels: bool = False):
-        # Get shell descriptors from AASX Server /shell-descriptors and write submodel descriptors:
+    def create_polling_threads(
+            self,
+            poll_descriptors: bool = True,
+            poll_shells: bool = True,
+            poll_submodel_descriptors: bool = True,
+            poll_submodels: bool = True
+    ):
+        # Get shell descriptors from AAS Source, endpoint: /shell-descriptors and write submodel descriptors:
         threads = []
-        if poll_descriptors:
+        if poll_descriptors and self.aas_source.shell_registry_client is not None:
             thread_descriptors = threading.Thread(target=self.poll_descriptors)
             threads.append(thread_descriptors)
 
-        # Get shells from AASX Server /shells:
-        if poll_shells:
+        # Get shells from AAS Source, endpoint: /shells:
+        if poll_shells and self.aas_source.shell_repository_client is not None:
             thread_shells = threading.Thread(target=self.poll_shells)
             threads.append(thread_shells)
 
-        # Get submodels from AASX Server /submodels:
-        if poll_submodels:
+        # Get submodel descriptors from AAS Source, endpoint: /submodel-descriptors:
+        if poll_submodel_descriptors and isinstance(self.aas_source, AasServices) and self.aas_source.submodel_registry_client is not None:
+            thread_submodel_descriptors = threading.Thread(target=self.poll_submodel_descriptors)
+            threads.append(thread_submodel_descriptors)
+
+        # Get submodels from AAS Source, endpoint: /submodels:
+        if poll_submodels and self.aas_source.submodel_repository_client is not None:
             thread_submodels = threading.Thread(target=self.poll_submodels)
             threads.append(thread_submodels)
 
@@ -96,7 +109,7 @@ class AasxServerPoller:
     def poll_shell_descriptors(self):
         try:
             start = time.time()
-            shell_descriptors = self.aasx_server.request_shell_descriptors()
+            shell_descriptors = self.aas_source.request_shell_descriptors()
             end = time.time()
             self._log(f"Polling shell descriptors took {end - start:.2f} seconds")
             self._log(f"Found {len(shell_descriptors)} shell descriptors")
@@ -107,10 +120,23 @@ class AasxServerPoller:
             self._log(f"TimeoutError: {e}", level=logging.ERROR)
             return None
 
+    def poll_submodel_descriptors(self):
+        try:
+            start = time.time()
+            submodel_descriptors = self.aas_source.request_submodel_descriptors()
+            end = time.time()
+            self._log(f"Polling submodel descriptors took {end - start:.2f} seconds")
+            self._log(f"Found {len(submodel_descriptors)} submodel descriptors")
+            self._couchdb_submodel_descriptor_client.save_submodel_descriptors(submodel_descriptors)
+            return submodel_descriptors
+        except (TimeoutError, ConnectTimeout) as e:
+            self._log(f"TimeoutError: {e}", level=logging.ERROR)
+            return None
+
     def poll_shells(self):
         try:
             start = time.time()
-            shells = self.aasx_server.request_shells()
+            shells = self.aas_source.request_shells()
             end = time.time()
             self._log(f"Polling shells took {end - start:.2f} seconds")
             self._log(f"Found {len(shells)} shells")
@@ -123,7 +149,7 @@ class AasxServerPoller:
     def poll_submodels(self):
         try:
             start = time.time()
-            submodels = self.aasx_server.request_submodels()
+            submodels = self.aas_source.request_submodels()
             end = time.time()
             elapsed_time = end - start
             self._log(f"Polling submodels took {end - start:.2f} seconds")
@@ -149,8 +175,9 @@ class AasxServerPoller:
         return submodel_descriptors
 
     def stop_polling(self):
+        self._log("Stop polling...")
         self._stop_polling = True
-        self._polling_thread.join()
+        self._initiator_thread.join()
 
     def _add_local_endpoints(self, shell_descriptors):
         start = time.time()
@@ -181,6 +208,8 @@ class AasxServerPoller:
         # return shell_descriptor.endpoints
 
     def _add_local_submodel_endpoints(self, shell_descriptor):
+        if shell_descriptor.submodel_descriptors is None:
+            return
         for submodel_descriptor in shell_descriptor.submodel_descriptors:
             if self._endpoints_list_contains_local_endpoint(submodel_descriptor.endpoints):
                 continue
@@ -198,8 +227,8 @@ class AasxServerPoller:
 
     def _log(self, message: str, level: int = logging.INFO):
         if level == logging.DEBUG:
-            self.log.debug(f"{self.aasx_server.name} | {message}")
+            self.log.debug(f"{self.aas_source.name} | {message}")
         elif level == logging.ERROR:
-            self.log.error(f"{self.aasx_server.name} | {message}")
+            self.log.error(f"{self.aas_source.name} | {message}")
         else:
-            self.log.info(f"{self.aasx_server.name} | {message}")
+            self.log.info(f"{self.aas_source.name} | {message}")
