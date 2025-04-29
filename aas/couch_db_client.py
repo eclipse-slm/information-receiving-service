@@ -13,6 +13,8 @@ from pycouchdb import Server
 from pycouchdb.client import Database
 from pycouchdb.exceptions import Conflict
 
+from services.aas_utils import convert_dict_keys_to_camel_case
+
 load_dotenv()
 
 
@@ -162,14 +164,16 @@ class CouchDBClient(ABC):
             # Check if current entity is equal to new entity:
             if current_entity is not None:
                 is_equal = self._equals(current_entity, entity)
-                # continue if current descriptor is equal to the new descriptor
+                # continue if current entity is equal to the new entity
                 if is_equal:
                     continue
             # Prepare the payload for saving
             if isinstance(entity, dict):
                 data = entity
             else:
-                data = json.loads(json.dumps(entity.to_dict(), default=serializer))
+                data =  convert_dict_keys_to_camel_case(
+                    json.loads(json.dumps(entity.to_dict(), default=serializer))
+                )
             payload = {
                 "_id": id,
                 "data": data
