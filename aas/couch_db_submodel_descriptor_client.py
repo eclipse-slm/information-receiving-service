@@ -24,7 +24,7 @@ class CouchDBSubmodelDescriptorClient(CouchDBClient):
         self._create_database()
 
 
-    def get_submodel_descriptor(self, identifier: str) -> SubmodelDescriptor:
+    def get_submodel_descriptor(self, identifier: str) -> dict:
         """
         Get a submodel descriptor by its identifier.
 
@@ -37,10 +37,11 @@ class CouchDBSubmodelDescriptorClient(CouchDBClient):
         doc = self.get_doc(doc_id=identifier)
         if doc is None:
             return None
-        return SubmodelDescriptor(**doc['data'])
+        # return SubmodelDescriptor(**doc['data'])
+        return doc['data']
 
 
-    def get_all_submodel_descriptors(self) -> List[SubmodelDescriptor]:
+    def get_all_submodel_descriptors(self) -> List[dict]:
         """
         Get all submodel descriptors from the CouchDB database.
 
@@ -51,7 +52,8 @@ class CouchDBSubmodelDescriptorClient(CouchDBClient):
         submodel_descriptors = []
         for doc in docs:
             submodel_descriptors.append(
-                SubmodelDescriptor(**doc['doc']['data'])
+                doc['doc']['data']
+                # SubmodelDescriptor(**doc['doc']['data'])
             )
         return submodel_descriptors
 

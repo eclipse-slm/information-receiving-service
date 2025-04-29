@@ -1,5 +1,6 @@
 import json
 import urllib
+from typing import List
 
 from aas_python_http_client import AssetAdministrationShellDescriptor
 
@@ -31,26 +32,28 @@ class CouchDBShellDescriptorClient(CouchDBClient):
 
         return AssetAdministrationShellDescriptor(**doc['data'])
 
-    def get_all_shell_descriptors(self) -> list[AssetAdministrationShellDescriptor]:
+    def get_all_shell_descriptors(self) -> List[dict]: #'-> list[AssetAdministrationShellDescriptor]:
         descriptors = []
         docs = self.get_all_docs()
         for doc in docs:
             try:
                 descriptors.append(
-                    AssetAdministrationShellDescriptor(**doc['doc']['data'])
+                    doc['doc']['data']
+                    # AssetAdministrationShellDescriptor(**doc['doc']['data'])
                 )
             except IndexError:
                 break;
         return descriptors
 
-    def get_shell_descriptors(self, limit: int, cursor: int) -> list[AssetAdministrationShellDescriptor]:
+    def get_shell_descriptors(self, limit: int, cursor: int) -> List[dict]: #-> list[AssetAdministrationShellDescriptor]:
         descriptors = []
         all_rows = self.get_all_docs()
         for i in range(cursor, limit):
             try:
                 row = all_rows[i]
                 descriptors.append(
-                    AssetAdministrationShellDescriptor(**row['doc']['data'])
+                    row['doc']['data']
+                    # AssetAdministrationShellDescriptor(**row['doc']['data'])
                 )
             except IndexError:
                 break;
