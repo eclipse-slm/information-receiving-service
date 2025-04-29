@@ -1,13 +1,69 @@
+from aas.couch_db_submodel_client import CouchDBSubmodelClient
 from model.app_config import AppConfig, load_config
+from services.abstract_handler import AbstractHandler
 from services.in_memory_store.in_memory_store import InMemoryStore
+from services.submodel_descriptor_handler import SubmodelDescriptorHandler
 
 
-class SubmodelHandler:
+class SubmodelHandler(AbstractHandler):
     def __init__(self):
-        self.in_memory_store = InMemoryStore()
+        self.in_memory_store = None
+        if self._use_in_memory_store:
+            self.in_memory_store = InMemoryStore()
+        self.couch_db_submodel_client = CouchDBSubmodelClient()
+        self.submodel_descriptor_handler = SubmodelDescriptorHandler()
         self._app_config: AppConfig = load_config()
 
-    def get_submodels_value_only(self, submodels):
+    @property
+    def submodels(self):
+        if self.in_memory_store:
+            return self.in_memory_store.submodels
+        else:
+            return self.couch_db_submodel_client.get_all_submodels()
+
+
+    def submodel(self, identifier: str):
+        if self.in_memory_store:
+            submodel = self.in_memory_store.submodel(identifier)
+        else:
+            submodel = self.couch_db_submodel_client.get_submodel(identifier)
+
+        if submodel is None:
+            submodel = self._get_submodel_from_remote(identifier)
+
+        return submodel
+
+
+    def submodel_value_only(self, identifier: str):
+        return self.convert_submodel_to_value_only(self.submodel(identifier))
+
+
+    def submodels_by_ids(self, ids: list[str]):
+        filtered_submodels = []
+        for submodel in self.submodels:
+            try:
+                if submodel['id'] in ids:
+                    filtered_submodels.append(submodel)
+            except KeyError:
+                continue
+        return filtered_submodels
+
+
+    def get_submodels_by_aas_server_name(self, aas_server_name:str, limit: int, cursor: str):
+        if aas_server_name is None:
+            submodels = self.submodels
+        else:
+            submodels_by_server_name, cursor = self.submodel_descriptor_handler.get_submodel_descriptors_by_aas_server_name(aas_server_name, -1, "0")
+            submodel_descriptor_ids_by_server_name = [descriptor['id'] for descriptor in submodels_by_server_name]
+            submodels = self.submodels_by_ids(submodel_descriptor_ids_by_server_name)
+
+        start, end, new_cursor = self.get_start_end_cursor(submodels, limit, cursor)
+
+        return submodels[start:end], new_cursor
+
+
+    def get_submodels_value_only(self, aas_server_name:str, limit: int, cursor: str):
+        submodels = self.get_submodels_by_aas_server_name(aas_server_name, limit, cursor)
         submodels_value_only = []
         for submodel in submodels:
             r = self.convert_submodel_to_value_only(submodel)
@@ -15,17 +71,17 @@ class SubmodelHandler:
                 submodels_value_only.append(r)
         return submodels_value_only
 
-    def get_submodel(self, identifier: str):
-        submodel = self.in_memory_store.submodel(identifier)
-
-        if submodel is None:
-            submodel = self._get_submodel_from_remote(identifier)
-
-        return submodel
-
-    def get_submodel_value_only(self, identifier: str):
-        submodel = self.get_submodel(identifier)
-        return self.convert_submodel_to_value_only(submodel)
+    # def get_submodel(self, identifier: str):
+    #     submodel = self.in_memory_store.submodel(identifier)
+    #
+    #     if submodel is None:
+    #         submodel = self._get_submodel_from_remote(identifier)
+    #
+    #     return submodel
+    #
+    # def get_submodel_value_only(self, identifier: str):
+    #     submodel = self.get_submodel(identifier)
+    #     return self.convert_submodel_to_value_only(submodel)
 
     def convert_submodel_to_value_only(self, submodel):
         submodel_value_only = {}
