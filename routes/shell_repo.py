@@ -7,10 +7,14 @@ from routes.routes_utils import decode_id
 from services.aas_utils import extract_submodel_references_from_shell_descriptor, get_paged_result_object, \
     get_paged_result_json
 from services.in_memory_store.in_memory_store import InMemoryStore
+from services.shell_descriptor_handler import ShellDescriptorHandler
+from services.shell_handler import ShellHandler
 
 router = APIRouter(prefix="/api/shell_repo", tags=["shell_repo"])
 
-in_memory_store = InMemoryStore()
+# in_memory_store = InMemoryStore()
+shell_handler = ShellHandler()
+shell_descriptor_handler = ShellDescriptorHandler()
 
 @router.get(path="/shells", status_code=200, description="Returns all Asset Administration Shells")
 def get_asset_administration_shells(limit: int = 500, cursor: str = "0", aas_server_name: str = None):
@@ -38,7 +42,7 @@ def get_asset_administration_shells(limit: int = 500, cursor: str = "0", aas_ser
     #     shells = convert_shell_descriptors_to_shells(shell_descriptors)
     #     return [shell.to_dict() for shell in shells]
 
-    shells, cursor = in_memory_store.get_shells_by_aas_server_name(aas_server_name, limit, cursor)
+    shells, cursor = shell_handler.get_shells_by_aas_server_name(aas_server_name, limit, cursor)
 
     return Response(
         content=get_paged_result_json(shells, cursor),
@@ -69,7 +73,7 @@ def get_asset_administration_shell(aasIdentifier: str, cached: bool = True):
     #     return shell.to_dict()
     aas_id_dec = decode_id(aasIdentifier)
 
-    shell = in_memory_store.shell(identifier=aas_id_dec)
+    shell = shell_handler.shell(identifier=aas_id_dec)
     if shell is None:
         raise HTTPException(status_code=404, detail="Shell not found")
 
@@ -84,7 +88,7 @@ def get_asset_administration_shell(aasIdentifier: str):
     # descriptor = get_remote_shell_descriptor(aas_id_dec)
 
     aas_id_dec = decode_id(aasIdentifier)
-    shell_descriptor = in_memory_store.shell_descriptor(identifier=aas_id_dec)
+    shell_descriptor = shell_descriptor_handler.shell_descriptor(identifier=aas_id_dec)
     if shell_descriptor is None:
         raise HTTPException(status_code=404, detail="Related shell descriptor not found")
 

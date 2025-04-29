@@ -8,7 +8,7 @@ from services.aas_utils import convert_dict_keys_to_camel_case
 from services.in_memory_store import in_memory_store_abstract
 from services.in_memory_store.in_memory_store_abstract import AbstractInMemoryStore
 
-api_client = ApiClient()
+# api_client = ApiClient()
 
 class InMemoryStoreShellDescriptors(AbstractInMemoryStore):
     def __init__(self):
@@ -23,9 +23,9 @@ class InMemoryStoreShellDescriptors(AbstractInMemoryStore):
 
     def _get_shell_descriptors(self):
         self._log("Start loading items from CouchDB into Memory")
-        descriptors = self._db_client.get_all_shell_descriptors()
-        descriptors_list = api_client.sanitize_for_serialization(descriptors)
-        self.store = convert_dict_keys_to_camel_case(descriptors_list)
+        self.store = self._db_client.get_all_shell_descriptors()
+        # descriptors_list = api_client.sanitize_for_serialization(descriptors)
+        # self.store = convert_dict_keys_to_camel_case(descriptors_list)
         self._log(f"Finished loading {len(self.store)} items from CouchDB into Memory.")
 
 

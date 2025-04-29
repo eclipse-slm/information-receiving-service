@@ -2,13 +2,13 @@ from fastapi import APIRouter, HTTPException
 from starlette.responses import Response
 
 from routes.routes_utils import decode_id
-from routes.shell_registry import in_memory_store
 from services.aas_utils import get_paged_result_json
-from services.in_memory_store.in_memory_store import InMemoryStore
+from services.submodel_descriptor_handler import SubmodelDescriptorHandler
 
 router = APIRouter(prefix="/api/submodel_registry", tags=["submodel_registry"])
 
-in_memory_store = InMemoryStore()
+# in_memory_store = InMemoryStore()
+submodel_descriptor_handler = SubmodelDescriptorHandler()
 
 @router.get(path="/submodel-descriptors", status_code=200, description="Returns all Submodel Descriptors")
 def get_submodel_descriptors(aas_server_name: str = None):
@@ -24,7 +24,7 @@ def get_submodel_descriptors(aas_server_name: str = None):
     # return get_paged_result_object(
     #     [submodel_descriptor.to_dict() for submodel_descriptor in submodel_descriptors]
     # )
-    submodel_descriptors = in_memory_store.get_submodel_descriptors_by_aas_server_name(aas_server_name)
+    submodel_descriptors = submodel_descriptor_handler.get_submodel_descriptors_by_aas_server_name(aas_server_name)
 
     return Response(
         content=get_paged_result_json(submodel_descriptors, None),
@@ -56,7 +56,7 @@ def get_submodel_descriptor(submodelIdentifier: str):
     # )
     id = decode_id(submodelIdentifier)
 
-    submodel_descriptor = in_memory_store.submodel_descriptor(id)
+    submodel_descriptor = submodel_descriptor_handler.submodel_descriptor(id)
 
     if submodel_descriptor is None:
         raise HTTPException(status_code=404, detail="Submodel descriptor not found")

@@ -30,12 +30,12 @@ class InMemoryStoreSubmodels(AbstractInMemoryStore):
                 return submodel
         return None
 
-    def get_store_filtered(self, ids: List[str]):
-        filtered_store = []
-        for submodel in self.store:
-            try:
-                if submodel['id'] in ids:
-                    filtered_store.append(submodel)
-            except KeyError as e:
-                continue
-        return filtered_store
+    # def get_store_filtered(self, ids: List[str]):
+    #     filtered_store = []
+    #     for submodel in self.store:
+    #         try:
+    #             if submodel['id'] in ids:
+    #                 filtered_store.append(submodel)
+    #         except KeyError as e:
+    #             continue
+    #     return filtered_store

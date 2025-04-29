@@ -1,12 +1,15 @@
 from fastapi import APIRouter, Response, HTTPException
 
 from routes.routes_utils import decode_id
+from routes.submodel_registry import submodel_descriptor_handler
 from services.aas_utils import get_paged_result_json
 from services.in_memory_store.in_memory_store import InMemoryStore
+from services.shell_descriptor_handler import ShellDescriptorHandler
 
 router = APIRouter(prefix="/api/shell_registry", tags=["shell_registry"])
 
-in_memory_store = InMemoryStore()
+# in_memory_store = InMemoryStore()
+shell_descriptor_handler = ShellDescriptorHandler()
 
 @router.get(path="/shell-descriptors", status_code=200, description="Returns all Asset Administration Shell Descriptors")
 def get_asset_administration_shell_descriptors(limit: int = 500, cursor: str = "0", aas_server_name: str = None):
@@ -31,7 +34,7 @@ def get_asset_administration_shell_descriptors(limit: int = 500, cursor: str = "
     #         )
     #     except IndexError:
     #         break;
-    shell_descriptors, cursor = in_memory_store.get_shell_descriptors_by_aas_server_name(
+    shell_descriptors, cursor = shell_descriptor_handler.get_shell_descriptors_by_aas_server_name(
         aas_server_name,
         limit,
         cursor
@@ -48,7 +51,7 @@ def get_asset_administration_shell_descriptor(aasIdentifier: str):
 
     decoded_id = decode_id(aasIdentifier)
 
-    descriptor = in_memory_store.shell_descriptor(decoded_id)
+    descriptor = submodel_descriptor_handler.shell_descriptor(decoded_id)
 
     # if len(descriptor) == 0:
     #     LOG.warn("No shell descriptor found for id: " + aasIdentifier)
@@ -73,7 +76,7 @@ def get_submodel_descriptors(aasIdentifier: str):
     #     LOG.warn("Multiple shell descriptors found for id: " + aasIdentifier)
 
     decoded_id = decode_id(aasIdentifier)
-    descriptor = in_memory_store.shell_descriptor(decoded_id)
+    descriptor = submodel_descriptor_handler.shell_descriptor(decoded_id)
 
     if descriptor is None:
         raise HTTPException(status_code=404, detail="Shell descriptor not found")
@@ -104,7 +107,7 @@ def get_submodel_descriptor(aasIdentifier: str, submodelIdentifier: str):
 
     decoded_aas_id = decode_id(aasIdentifier)
     decoded_sm_id = decode_id(submodelIdentifier)
-    descriptor = in_memory_store.shell_descriptor(decoded_aas_id)
+    descriptor = submodel_descriptor_handler.shell_descriptor(decoded_aas_id)
 
     if descriptor is None:
         raise HTTPException(status_code=404, detail="Shell descriptor not found")
