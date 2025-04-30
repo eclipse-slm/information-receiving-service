@@ -130,7 +130,7 @@ class SubmodelHandler(AbstractHandler):
 
 
     def _get_submodel_from_remote(self, identifier: str):
-        submodel_descriptor = self.in_memory_store.submodel_descriptor(identifier)
+        submodel_descriptor = self.submodel_descriptor_handler.submodel_descriptor(identifier)
         aasx_server = self._get_responsible_aasx_server_from_submodel_descriptor(submodel_descriptor)
 
         if aasx_server is None:
