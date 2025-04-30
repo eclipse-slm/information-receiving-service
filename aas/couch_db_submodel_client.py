@@ -29,7 +29,10 @@ class CouchDBSubmodelClient(CouchDBClient):
 
     def get_submodel(self, identifier: str) -> Dict:
         doc = self.get_doc(identifier)
-        return doc['data']
+        if doc:
+            return doc['data']
+        else:
+            return None
 
 
     def save_submodels(self, submodels: List[Dict]):
