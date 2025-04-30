@@ -2,8 +2,9 @@ FROM ghcr.io/eclipse-slm/information-receiving-service/base:1.0.0-SNAPSHOT
 
 ENV COUCHDB_HOST=couch-db \
     COUCHDB_PORT=5984 \
-    COUCHDB_USERNAME=username\
-    COUCHDB_PASSWORD=password
+    COUCHDB_USERNAME=username \
+    COUCHDB_PASSWORD=password \
+    USE_IN_MEMORY_STORE=false
 
 EXPOSE ${SERVICE_PORT}
 
