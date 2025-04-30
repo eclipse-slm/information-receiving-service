@@ -3,6 +3,7 @@ from typing import Union, List, Any
 
 import yaml
 from dotenv import load_dotenv
+from oauthlib.oauth2 import MissingTokenError
 from pydantic import BaseModel, Field, model_validator, ValidationError
 
 from model.aas_services import AasServices
@@ -34,6 +35,9 @@ class AppConfig(BaseModel):
                 aas_source_class(**source_dict)
                 return True
             except ValidationError:
+                continue
+            except MissingTokenError as e:
+                print(f"Missing token error of aas source \"{source_dict['name']}\"")
                 continue
         return False
 
