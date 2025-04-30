@@ -95,14 +95,14 @@ class GarbageCollector:
         for shell_descriptor in shell_descriptors:
             found = False
             for aas_source in self._aas_sources:
-                result = aas_source.request_shell_descriptor(shell_descriptor.id)
+                result = aas_source.request_shell_descriptor(shell_descriptor['id'])
                 if result is not None:
                     found = True
                     break
 
             if not found:
-                self._log(f"By Id Request | Delete shell descriptor | id = {shell_descriptor.id}")
-                self._couchdb_shell_descriptor_client.delete_shell_descriptor(shell_descriptor.id)
+                self._log(f"By Id Request | Delete shell descriptor | id = {shell_descriptor['id']}")
+                self._couchdb_shell_descriptor_client.delete_shell_descriptor(shell_descriptor['id'])
 
 
     def _do_shell_garbage_collecting_by_id_request(self):
@@ -136,7 +136,7 @@ class GarbageCollector:
                 for shell in shells_containing_descriptor:
                     result = aas_source.request_submodel_descriptor(
                         shell['id'],
-                        submodel_descriptor.id
+                        submodel_descriptor['id']
                     )
                     if result is not None:
                         found = True
@@ -145,8 +145,8 @@ class GarbageCollector:
                     break
 
             if not found:
-                self._log(f"By Id Request | Delete submodel descriptor | id = {submodel_descriptor.id}")
-                self._couchdb_submodel_descriptor_client.delete_submodel_descriptor(submodel_descriptor.id)
+                self._log(f"By Id Request | Delete submodel descriptor | id = {submodel_descriptor['id']}")
+                self._couchdb_submodel_descriptor_client.delete_submodel_descriptor(submodel_descriptor['id'])
 
 
     def _do_submodel_garbage_collecting_by_id_request(self):
@@ -178,7 +178,7 @@ class GarbageCollector:
                     id = shell_descriptor['id']
                 else:
                     endpoints = shell_descriptor.endpoints
-                    id = shell_descriptor.id
+                    id = shell_descriptor['id']
 
                 if not self._is_base_url_in_endpoint_list(
                         endpoints,
@@ -202,7 +202,7 @@ class GarbageCollector:
                     id = submodel_descriptor['id']
                 else:
                     endpoints = submodel_descriptor.endpoints
-                    id = submodel_descriptor.id
+                    id = submodel_descriptor['id']
 
                 if not self._is_base_url_in_endpoint_list(
                         endpoints,
@@ -227,7 +227,7 @@ class GarbageCollector:
                 submodels = shell['submodels']
                 for submodel in submodels:
                     keys = [key['value'] for key in submodel['keys']]
-                    if submodel_descriptor.id in keys:
+                    if submodel_descriptor['id'] in keys:
                         filtered_shells.append(shell)
                         break
             except KeyError:
