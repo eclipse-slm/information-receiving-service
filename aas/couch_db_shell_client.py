@@ -18,10 +18,13 @@ class CouchDBShellClient(CouchDBClient):
         docs = self.get_all_docs()
         shells = []
         for doc in docs:
-            shells.append(
-                # json.loads(json.dumps(doc['doc']['data']), cls=AASFromJsonDecoder)
-                doc['doc']['data']
-            )
+            try:
+                shells.append(
+                    # json.loads(json.dumps(doc['doc']['data']), cls=AASFromJsonDecoder)
+                    doc['doc']['data']
+                )
+            except KeyError:
+                continue
         return shells
 
     def save_shells(self, source_name: str, shells: List[dict]):

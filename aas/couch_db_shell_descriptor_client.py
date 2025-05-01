@@ -41,8 +41,10 @@ class CouchDBShellDescriptorClient(CouchDBClient):
                     doc['doc']['data']
                     # AssetAdministrationShellDescriptor(**doc['doc']['data'])
                 )
+            except KeyError:
+                continue
             except IndexError:
-                break;
+                break
         return descriptors
 
     def get_shell_descriptors(self, limit: int, cursor: int) -> List[dict]: #-> list[AssetAdministrationShellDescriptor]:

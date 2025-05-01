@@ -51,10 +51,13 @@ class CouchDBSubmodelDescriptorClient(CouchDBClient):
         docs = self.get_all_docs()
         submodel_descriptors = []
         for doc in docs:
-            submodel_descriptors.append(
-                doc['doc']['data']
-                # SubmodelDescriptor(**doc['doc']['data'])
-            )
+            try:
+                submodel_descriptors.append(
+                    doc['doc']['data']
+                    # SubmodelDescriptor(**doc['doc']['data'])
+                )
+            except KeyError:
+                continue
         return submodel_descriptors
 
 

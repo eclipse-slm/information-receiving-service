@@ -21,9 +21,12 @@ class CouchDBSubmodelClient(CouchDBClient):
         docs = self.get_all_docs()
         submodels = []
         for doc in docs:
-            submodels.append(
-                doc['doc']['data']
-            )
+            try:
+                submodels.append(
+                    doc['doc']['data']
+                )
+            except KeyError:
+                continue
         return submodels
 
 
