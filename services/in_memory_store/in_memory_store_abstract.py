@@ -6,7 +6,6 @@ from requests.exceptions import ChunkedEncodingError
 
 from aas.couch_db_client import CouchDBClient
 from logger.logger import set_basic_config
-from services.aas_utils import convert_dict_keys_to_camel_case
 
 # Configure logging
 set_basic_config()
@@ -70,23 +69,24 @@ class AbstractInMemoryStore(ABC, BaseFeedReader):
     def on_heartbeat(self):
         pass
 
-    def _add_item_to_store(self, id):
+    def _add_item_to_store(self, identifier):
         """
         Add an item to the store.
         """
-        item = self._db_client.get_doc(id)
+        item = self._db_client.get_doc(identifier)
         if item:
-            self._remove_item_from_store(id)
+            self._remove_item_from_store(identifier)
             self.store.append(
-                convert_dict_keys_to_camel_case(item['data'])
+                item['data']
+                # convert_dict_keys_to_camel_case(item['data'])
             )
             # print(f"Finished adding shell descriptor with id {id} to memory.")
         else:
-            self._log(f"Item with id {id} not found in CouchDB.")
+            self._log(f"Item with id {identifier} not found in CouchDB.")
 
 
-    def _remove_item_from_store(self, id):
-        self.store = [item for item in self.store if item['id'] != id]
+    def _remove_item_from_store(self, identifier):
+        self.store = [item for item in self.store if item['id'] != identifier]
 
 
     def _log(self, message: str, log_level: logging=logging.INFO):
