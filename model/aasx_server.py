@@ -1,11 +1,10 @@
-from typing import List, Optional, Union, Any
+from typing import List, Optional, Union
 
-from aas_python_http_client import ApiClient, AssetAdministrationShellRegistryAPIApi, Configuration, \
-    SubmodelRegistryAPIApi, \
+import requests
+from aas_python_http_client import ApiClient, AssetAdministrationShellRegistryAPIApi, SubmodelRegistryAPIApi, \
     AssetAdministrationShellRepositoryAPIApi, \
     SubmodelRepositoryAPIApi
 from pydantic import Field, model_validator
-from pydantic.v1 import root_validator
 from typing_extensions import Self
 
 from model.aas_source import AasSource
@@ -23,7 +22,10 @@ class AasxServer(AasSource):
 
     @model_validator(mode="after")
     def check_auth(self) -> Self:
-        self.auth.auth_header
+        try:
+            self.auth.auth_header
+        except requests.exceptions.ConnectionError:
+            raise ValueError(f"ConnectionError on authentication for AASX server with name {self.name} when using configured credentials.")
         return self
 
 
