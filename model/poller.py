@@ -1,4 +1,6 @@
+import logging
 import os
+import time
 from typing import List
 
 from dotenv import load_dotenv
@@ -12,6 +14,8 @@ load_dotenv()
 
 
 class Poller:
+    log = logging.getLogger(__name__)
+
     def __init__(self):
         if self._mqtt_enabled:
             self._mqtt_client = MqttClient()
@@ -30,12 +34,18 @@ class Poller:
 
 
     def _watch_config(self):
+        sleep_time_in_seconds = 60
+        self.log.info("Start watching config file...")
         while True:
             config = load_config()
             for aas_source in config.aas_servers:
                 self._start_aas_source_poller(aas_source)
 
-            self._stop_aas_source_poller()
+            self.log.info(f"Restart watching config file in {sleep_time_in_seconds} seconds...")
+            time.sleep(sleep_time_in_seconds)
+
+        self._stop_aas_source_poller()
+        self.log.info("Stop watching config file.")
 
     def _start_aas_source_poller(self, aas_source: AasSource):
         if len(self._polling_white_list) > 0:
