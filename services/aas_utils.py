@@ -197,7 +197,7 @@ def convert_dict_keys_to_camel_case(input_data):
         return input_data  # Return the value if it's neither a dict nor a list
 
 
-def get_paged_result_object(result: List, cursor: str, convert_to_camel_case: bool = False) -> dict:
+def get_paged_result_object(result: List, cursor: str, do_convert_to_camel_case: bool = False) -> dict:
     if cursor is None:
         paging_metadata = {}
     else:
@@ -205,8 +205,8 @@ def get_paged_result_object(result: List, cursor: str, convert_to_camel_case: bo
             "cursor": cursor,
         }
 
-    if convert_to_camel_case:
-        r = convert_to_camel_case(result)
+    if do_convert_to_camel_case:
+        r = convert_dict_keys_to_camel_case(result)
     else:
         r = result
 
@@ -215,11 +215,11 @@ def get_paged_result_object(result: List, cursor: str, convert_to_camel_case: bo
         "result": r
     }
 
-def get_paged_result_json(result: List, cursor: str, convert_to_camel_case: bool = False) -> str:
+def get_paged_result_json(result: List, cursor: str, do_convert_to_camel_case: bool = False) -> str:
     paged_result = get_paged_result_object(
         result,
         cursor,
-        convert_to_camel_case
+        do_convert_to_camel_case
     )
 
     return json.dumps(paged_result)
