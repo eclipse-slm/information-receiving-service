@@ -13,8 +13,8 @@ class CouchDBShellDescriptorClient(CouchDBClient):
         super().__init__(database_name="shell_descriptors", client_name=client_name)
         self._create_database()
 
-    def save_shell_descriptors(self, descriptors: list[AssetAdministrationShellDescriptor]):
-        self.save_entities(descriptors)
+    def save_shell_descriptors(self, source_name: str, descriptors: list[AssetAdministrationShellDescriptor]):
+        self.save_entities(source_name, descriptors)
 
     def save_shell_descriptor(self, descriptor: AssetAdministrationShellDescriptor):
         data = json.loads(json.dumps(descriptor.to_dict(), default=couch_db_client.serializer))
@@ -47,10 +47,9 @@ class CouchDBShellDescriptorClient(CouchDBClient):
 
     def get_shell_descriptors(self, limit: int, cursor: int) -> List[dict]: #-> list[AssetAdministrationShellDescriptor]:
         descriptors = []
-        all_rows = self.get_all_docs()
-        for i in range(cursor, limit):
+        all_rows = self.get_all_docs(limit=limit, skip=cursor)
+        for row in all_rows:
             try:
-                row = all_rows[i]
                 descriptors.append(
                     row['doc']['data']
                     # AssetAdministrationShellDescriptor(**row['doc']['data'])

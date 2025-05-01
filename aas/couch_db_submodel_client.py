@@ -35,26 +35,23 @@ class CouchDBSubmodelClient(CouchDBClient):
             return None
 
 
-    def save_submodels(self, submodels: List[Dict]):
-        docs = []
+    def save_submodels(self, source_name: str, submodels: List[dict]):
+        count_limit = 10000
+        entities = []
         counter = 0
-        for submodel in submodels:
-            counter += 1
-            try:
-                data = json.loads(json.dumps(submodel, cls=AASToJsonEncoder))
-                payload = {
-                    "_id": submodel['id'],
-                    "data": data
-                }
-                docs.append(payload)
-            except Exception as e:
-                self._log(f"Failed to save submodel | {e}")
-            if counter == 10000:
-                self.save_docs(docs=docs)
-                counter = 0
-                docs = []
 
-        self.save_docs(docs=docs)
+        if len(submodels) >count_limit:
+            for submodel in submodels:
+                counter += 1
+                entities.append(submodel)
+                if counter == count_limit:
+                    self.save_entities(source_name, entities)
+                    counter = 0
+                    entities = []
+        else:
+            entities = submodels
+
+        self.save_entities(source_name, entities)
 
     def delete_submodel(self, sm_identifier: str):
         self.delete_doc(doc_id=sm_identifier)

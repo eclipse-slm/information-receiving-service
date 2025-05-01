@@ -5,15 +5,14 @@ import threading
 import time
 import urllib
 from abc import ABC
+from typing import List
 
 from basyx.aas.adapter.json import AASToJsonEncoder
 from basyx.aas.model import SpecificAssetId, ExternalReference
 from dotenv import load_dotenv
 from pycouchdb import Server
 from pycouchdb.client import Database
-from pycouchdb.exceptions import Conflict
-
-from services.aas_utils import convert_dict_keys_to_camel_case
+from pycouchdb.exceptions import Conflict, NotFound
 
 load_dotenv()
 
@@ -42,6 +41,18 @@ class CouchDBClient(ABC):
         if self._db is None:
             self._db = self._server.database(self.database_name)
         return self._db
+
+
+    @property
+    def _view_doc(self):
+        _id = "_design/filter_by_source_name"
+        try:
+            return self.db.get(_id)
+        except NotFound:
+            return {
+                "_id":  _id,
+                "views": {}
+            }
 
 
     def _create_database(self):
@@ -84,8 +95,8 @@ class CouchDBClient(ABC):
             pass
             # print(f"Database \"{self._database_name}\" exists already | Skip create: {e}")
 
-    def get_all_docs(self):
-        return self.db.all(as_list=True)
+    def get_all_docs(self, **kwargs):
+        return self.db.all(as_list=True, **kwargs)
 
     def get_doc(self, doc_id: str):
         doc_id_quoted = urllib.parse.quote(doc_id, safe='')
@@ -118,21 +129,21 @@ class CouchDBClient(ABC):
             print(f"Error saving documents to \"{self.database_name}\": {e}")
 
 
-    def save_entities(self, entities: list[object]):
+    def save_entities(self, source_name: str, entities: List[dict]):
         entity_splits = [entities[i:i + self._max_count_bulk_save] for i in range(0, len(entities), self._max_count_bulk_save)]
 
         if len(entity_splits) > 1:
-            self._run_save_entity_threads(entity_splits)
+            self._run_save_entity_threads(source_name, entity_splits)
         elif len(entity_splits) == 1:
-            self._save_entity_list(entity_splits[0])
+            self._save_entity_list_with_name(source_name, entity_splits[0])
 
 
-    def _run_save_entity_threads(self, entity_splits: list[list[object]]):
+    def _run_save_entity_threads(self, source_name: str, entity_splits: List[List[dict]]):
         threads = []
         total_entity_count = sum(len(split) for split in entity_splits)
 
         for entity_split in entity_splits:
-            thread = threading.Thread(target=self._save_entity_list, args=(entity_split,))
+            thread = threading.Thread(target=self._save_entity_list_with_name, args=(source_name, entity_split,))
             threads.append(thread)
 
         start = time.time()
@@ -146,10 +157,10 @@ class CouchDBClient(ABC):
         end = time.time()
         elapsed = end - start
 
-        self._log(f"Finished {len(threads)} thread(s) to save {total_entity_count} entititis into {self.database_name} in {elapsed:.2f} seconds.")
+        self._log(f"Finished {len(threads)} thread(s) to save {total_entity_count} entities into {self.database_name} in {elapsed:.2f} seconds.")
 
 
-    def _save_entity_list(self, entity_list: list[object]):
+    def _save_entity_list_with_name(self, source_name:str, entity_list: list[object]):
         docs = []
         for entity in entity_list:
             ## Diff with doc from DB
@@ -167,16 +178,10 @@ class CouchDBClient(ABC):
                 # continue if current entity is equal to the new entity
                 if is_equal:
                     continue
-            # Prepare the payload for saving
-            if isinstance(entity, dict):
-                data = entity
-            else:
-                data =  convert_dict_keys_to_camel_case(
-                    json.loads(json.dumps(entity.to_dict(), default=serializer))
-                )
             payload = {
                 "_id": id,
-                "data": data
+                "source_name": source_name.lower(),
+                "data": entity
             }
 
             # add rev to payload to update if new entity diffs from current entity
@@ -190,6 +195,22 @@ class CouchDBClient(ABC):
     def delete_doc(self, doc_id: str):
         doc_id_quoted = urllib.parse.quote(doc_id, safe='')
         self.db.delete(doc_id_quoted)
+
+
+    def _get_view_by_source_name(self, source_name: str):
+        view_name = source_name
+        view_function = {"map": "function (doc) { if(doc.source_name.indexOf(\""+source_name+"\") !== -1) { emit(doc._id, null)}}"}
+        return view_name, view_function
+
+    def _add_view_to_view_doc(self, view_name, view_function):
+        doc = self._view_doc
+        if "views" not in doc:
+            doc["views"] = {}
+        doc["views"][view_name] = view_function
+        return doc
+
+    def add_source_name_as_view(self, source_name: str):
+        self.db.save(self._add_view_to_view_doc(*self._get_view_by_source_name(source_name)))
 
 
     def _equals(self, a: object, b: object) -> bool:
@@ -224,3 +245,41 @@ class CouchDBClient(ABC):
             self.log.info(output)
         else:
             self.log.debug(output)
+
+
+    # def _save_entity_list(self, entity_list: list[object]):
+    #     docs = []
+    #     for entity in entity_list:
+    #         ## Diff with doc from DB
+    #         if isinstance(entity, dict):
+    #             id = entity['id']
+    #         else:
+    #             id = entity.id
+    #
+    #         doc = self.get_doc(id)
+    #         current_entity = None if doc is None else doc['data']
+    #         is_equal = None
+    #         # Check if current entity is equal to new entity:
+    #         if current_entity is not None:
+    #             is_equal = self._equals(current_entity, entity)
+    #             # continue if current entity is equal to the new entity
+    #             if is_equal:
+    #                 continue
+    #         # Prepare the payload for saving
+    #         if isinstance(entity, dict):
+    #             data = entity
+    #         else:
+    #             data =  convert_dict_keys_to_camel_case(
+    #                 json.loads(json.dumps(entity.to_dict(), default=serializer))
+    #             )
+    #         payload = {
+    #             "_id": id,
+    #             "data": data
+    #         }
+    #
+    #         # add rev to payload to update if new entity diffs from current entity
+    #         if is_equal is not None and not is_equal:
+    #             payload['_rev'] = self.get_doc_rev(id)
+    #         docs.append(payload)
+    #
+    #     self.save_docs(docs=docs)
