@@ -4,7 +4,6 @@ from typing import List
 from aas_python_http_client import SubmodelDescriptor, ApiClient
 
 from aas.couch_db_submodel_descriptor_client import CouchDBSubmodelDescriptorClient
-from services.aas_utils import convert_dict_keys_to_camel_case
 from services.in_memory_store import in_memory_store_abstract
 from services.in_memory_store.in_memory_store_abstract import AbstractInMemoryStore
 

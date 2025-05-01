@@ -1,12 +1,12 @@
 import threading
 from typing import List
 
-from aas_python_http_client import AssetAdministrationShellDescriptor, ApiClient
+from aas_python_http_client import AssetAdministrationShellDescriptor
 
 from aas.couch_db_shell_descriptor_client import CouchDBShellDescriptorClient
-from services.aas_utils import convert_dict_keys_to_camel_case
 from services.in_memory_store import in_memory_store_abstract
 from services.in_memory_store.in_memory_store_abstract import AbstractInMemoryStore
+
 
 # api_client = ApiClient()
 
