@@ -1,5 +1,5 @@
 import os
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import List
 
 from model.app_config import load_config
@@ -11,6 +11,9 @@ class AbstractHandler(ABC):
     def _use_in_memory_store(self):
         return os.getenv("USE_IN_MEMORY_STORE").lower() == "true"
 
+    @abstractmethod
+    def _total_count(self, aas_source_name: str):
+        pass
 
     def get_base_url_by_aas_server_name(self, aas_server_name:str) -> str:
         aasx_servers = load_config().aas_servers
@@ -30,6 +33,15 @@ class AbstractHandler(ABC):
                     return True
         return False
 
+
+    def get_start_end(self, limit: int, cursor: str):
+        start = int(cursor) if cursor is not None else 0
+        end = start + limit
+        return start, end
+
+    def get_cursor(self, limit: int, cursor: str, total_count: int):
+        start, end = self.get_start_end(limit, cursor)
+        return str(end) if end < total_count else None
 
     def get_start_end_cursor(self, aas_objects: List[dict], limit: int, cursor: str):
         start = int(cursor) if cursor is not None else 0

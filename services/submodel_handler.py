@@ -14,12 +14,23 @@ class SubmodelHandler(AbstractHandler):
         self.submodel_descriptor_handler = SubmodelDescriptorHandler()
         self._app_config: AppConfig = load_config()
 
-    @property
-    def submodels(self):
-        if self.in_memory_store:
-            return self.in_memory_store.submodels
+    def _total_count(self, aas_source_name: str) -> int:
+        if aas_source_name is None:
+            return self.couch_db_submodel_client.total_doc_count
         else:
-            return self.couch_db_submodel_client.get_all_submodels()
+            return self.couch_db_submodel_client.total_view_doc_count(aas_source_name)
+
+    def submodels(self, aas_source_name:str = None, limit: int = -1, cursor: str = "0"):
+        if self.in_memory_store:
+            start, end = self.get_start_end(limit, cursor)
+            if aas_source_name is None:
+                return self.in_memory_store.submodels[start:end]
+            else:
+                submodels_by_source_name, cursor = self.submodel_descriptor_handler.get_submodel_descriptors_by_aas_source_name(aas_source_name, -1, "0")
+                submodel_descriptor_ids_by_source_name = [descriptor['id'] for descriptor in submodels_by_source_name]
+                return self.submodels_by_ids(submodel_descriptor_ids_by_source_name)[start:end]
+        else:
+            return self.couch_db_submodel_client.get_submodels(aas_source_name, limit, int(cursor))
 
 
     def submodel(self, identifier: str):
@@ -40,7 +51,7 @@ class SubmodelHandler(AbstractHandler):
 
     def submodels_by_ids(self, ids: list[str]):
         filtered_submodels = []
-        for submodel in self.submodels:
+        for submodel in self.submodels():
             try:
                 if submodel['id'] in ids:
                     filtered_submodels.append(submodel)
@@ -49,17 +60,20 @@ class SubmodelHandler(AbstractHandler):
         return filtered_submodels
 
 
-    def get_submodels_by_aas_server_name(self, aas_server_name:str, limit: int, cursor: str):
-        if aas_server_name is None:
-            submodels = self.submodels
-        else:
-            submodels_by_server_name, cursor = self.submodel_descriptor_handler.get_submodel_descriptors_by_aas_server_name(aas_server_name, -1, "0")
-            submodel_descriptor_ids_by_server_name = [descriptor['id'] for descriptor in submodels_by_server_name]
-            submodels = self.submodels_by_ids(submodel_descriptor_ids_by_server_name)
-
-        start, end, new_cursor = self.get_start_end_cursor(submodels, limit, cursor)
-
-        return submodels[start:end], new_cursor
+    def get_submodels_by_aas_server_name(self, aas_source_name:str, limit: int, cursor: str):
+        submodels = self.submodels(aas_source_name, limit, cursor)
+        new_cursor = self.get_cursor(limit, cursor, self._total_count(aas_source_name))
+        return submodels, new_cursor
+        # if aas_server_name is None:
+        #     submodels = self.submodels
+        # else:
+        #     submodels_by_server_name, cursor = self.submodel_descriptor_handler.get_submodel_descriptors_by_aas_server_name(aas_source_name, -1, "0")
+        #     submodel_descriptor_ids_by_server_name = [descriptor['id'] for descriptor in submodels_by_server_name]
+        #     submodels = self.submodels_by_ids(submodel_descriptor_ids_by_server_name)
+        #
+        # start, end, new_cursor = self.get_start_end_cursor(submodels, limit, cursor)
+        #
+        # return submodels[start:end], new_cursor
 
 
     def get_submodels_value_only(self, aas_server_name:str, limit: int, cursor: str):

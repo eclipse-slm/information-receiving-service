@@ -14,15 +14,28 @@ class ShellHandler(AbstractHandler):
         self.shell_descriptor_handler = ShellDescriptorHandler()
         self.couch_db_shell_client = CouchDBShellClient()
 
-    @property
-    def shells(self):
-        if self.in_memory_store:
-            return self.in_memory_store.shells
+    def _total_count(self, aas_source_name: str) -> int:
+        if aas_source_name is None:
+            return self.couch_db_shell_client.total_doc_count
         else:
-            return self.couch_db_shell_client.get_all_shells()
+            return self.couch_db_shell_client.total_view_doc_count(aas_source_name)
+
+
+    def shells(self, aas_source_name: str = None, limit: int = -1, cursor: str = "0"):
+        if self.in_memory_store:
+            start, end = self.get_start_end(limit, cursor)
+            if aas_source_name is None:
+                return self.in_memory_store.shells[start:end]
+            else:
+                descriptors_by_source_name, cursor = self.shell_descriptor_handler.get_shell_descriptors_by_aas_server_name(aas_source_name, -1, "0")
+                shell_descriptor_ids_by_source_name = [descriptor['id'] for descriptor in descriptors_by_source_name]
+                return self.shells_by_ids(shell_descriptor_ids_by_source_name)[start:end]
+        else:
+            return self.couch_db_shell_client.get_shells(aas_source_name, limit, int(cursor))
+
 
     def shell(self, identifier: str):
-        for shell in self.shells:
+        for shell in self.shells():
             try:
                 if shell['id'] == identifier:
                     return shell
@@ -32,7 +45,7 @@ class ShellHandler(AbstractHandler):
 
     def shells_by_ids(self, ids: List[str]):
         filtered_shells = []
-        for shell in self.shells:
+        for shell in self.shells():
             try:
                 if shell['id'] in ids:
                     filtered_shells.append(shell)
@@ -41,17 +54,19 @@ class ShellHandler(AbstractHandler):
         return filtered_shells
 
 
-    def get_shells_by_aas_server_name(self, aas_server_name:str, limit: int, cursor: str):
-        if aas_server_name is None:
-            shells = self.shells
-        else:
-            descriptors_by_server_name, cursor = self.shell_descriptor_handler.get_shell_descriptors_by_aas_server_name(aas_server_name, -1, "0")
-            shell_descriptor_ids_by_server_name = [descriptor['id'] for descriptor in descriptors_by_server_name]
-            shells = self.shells_by_ids(shell_descriptor_ids_by_server_name)
-
-        start, end, new_cursor = self.get_start_end_cursor(shells, limit, cursor)
-
-        return shells[start:end], new_cursor
+    def get_shells_by_aas_server_name(self, aas_source_name:str, limit: int, cursor: str):
+        shells = self.shells(aas_source_name, limit, cursor)
+        return shells, self.get_cursor(limit, cursor, self._total_count(aas_source_name))
+        # if aas_server_name is None:
+        #     shells = self.shells
+        # else:
+        #     descriptors_by_server_name, cursor = self.shell_descriptor_handler.get_shell_descriptors_by_aas_server_name(aas_server_name, -1, "0")
+        #     shell_descriptor_ids_by_server_name = [descriptor['id'] for descriptor in descriptors_by_server_name]
+        #     shells = self.shells_by_ids(shell_descriptor_ids_by_server_name)
+        #
+        # start, end, new_cursor = self.get_start_end_cursor(shells, limit, cursor)
+        #
+        # return shells[start:end], new_cursor
 
     def get_shell_ids_by_asset_id(self, asset_id: str):
         """
