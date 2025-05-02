@@ -11,7 +11,7 @@ router = APIRouter(prefix="/api/submodel_registry", tags=["submodel_registry"])
 submodel_descriptor_handler = SubmodelDescriptorHandler()
 
 @router.get(path="/submodel-descriptors", status_code=200, description="Returns all Submodel Descriptors")
-def get_submodel_descriptors(aas_server_name: str = None):
+def get_submodel_descriptors(limit: int = 500, cursor: str = "0", aas_server_name: str = None):
     # descriptors = get_remote_shell_descriptors()
     # submodel_descriptors = []
     #
@@ -24,10 +24,14 @@ def get_submodel_descriptors(aas_server_name: str = None):
     # return get_paged_result_object(
     #     [submodel_descriptor.to_dict() for submodel_descriptor in submodel_descriptors]
     # )
-    submodel_descriptors = submodel_descriptor_handler.get_submodel_descriptors_by_aas_server_name(aas_server_name)
+    submodel_descriptors, new_cursor = submodel_descriptor_handler.get_submodel_descriptors_by_aas_source_name(
+        aas_server_name,
+        limit,
+        cursor
+    )
 
     return Response(
-        content=get_paged_result_json(submodel_descriptors, None),
+        content=get_paged_result_json(submodel_descriptors, new_cursor),
         media_type="application/json"
     )
 
