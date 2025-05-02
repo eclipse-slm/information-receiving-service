@@ -3,7 +3,6 @@ from fastapi import APIRouter, Response, HTTPException
 from routes.routes_utils import decode_id
 from routes.submodel_registry import submodel_descriptor_handler
 from services.aas_utils import get_paged_result_json
-from services.in_memory_store.in_memory_store import InMemoryStore
 from services.shell_descriptor_handler import ShellDescriptorHandler
 
 router = APIRouter(prefix="/api/shell_registry", tags=["shell_registry"])
