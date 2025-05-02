@@ -47,17 +47,23 @@ class CouchDBShellDescriptorClient(CouchDBClient):
                 break
         return descriptors
 
-    def get_shell_descriptors(self, limit: int, cursor: int) -> List[dict]: #-> list[AssetAdministrationShellDescriptor]:
+    def get_shell_descriptors(self, source_name: str, limit: int, cursor: int) -> List[dict]:
         descriptors = []
-        all_rows = self.get_all_docs(limit=limit, skip=cursor)
-        for row in all_rows:
+        if source_name is None:
+            rows = self.get_all_docs(limit=limit, skip=cursor)
+        else:
+            rows = self.get_view_docs(source_name, limit, cursor)
+
+        for row in rows:
             try:
                 descriptors.append(
                     row['doc']['data']
-                    # AssetAdministrationShellDescriptor(**row['doc']['data'])
                 )
+            except KeyError:
+                continue
             except IndexError:
-                break;
+                break
+
         return descriptors
 
     def delete_shell_descriptor(self, aas_identifier: str):

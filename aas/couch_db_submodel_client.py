@@ -29,6 +29,23 @@ class CouchDBSubmodelClient(CouchDBClient):
                 continue
         return submodels
 
+    def get_submodels(self, source_name: str, limit: int, cursor: int) -> List[Dict]:
+        submodels = []
+        if source_name is None:
+            rows = self.get_all_docs(limit=limit, skip=cursor)
+        else:
+            rows = self.get_view_docs(source_name, limit, cursor)
+
+        for row in rows:
+            try:
+                submodels.append(
+                    # json.loads(json.dumps(row['doc']['data']), cls=AASFromJsonDecoder)
+                    row['doc']['data']
+                )
+            except KeyError:
+                continue
+        return submodels
+
 
     def get_submodel(self, identifier: str) -> Dict:
         doc = self.get_doc(identifier)

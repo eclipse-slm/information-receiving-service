@@ -60,6 +60,25 @@ class CouchDBSubmodelDescriptorClient(CouchDBClient):
                 continue
         return submodel_descriptors
 
+    def get_submodel_descriptors(self, source_name: str, limit: int, cursor: int) -> List[dict]:
+        descriptors = []
+        if source_name is None:
+            rows = self.get_all_docs(limit=limit, skip=cursor)
+        else:
+            rows = self.get_view_docs(source_name, limit, cursor)
+
+        for row in rows:
+            try:
+                descriptors.append(
+                    row['doc']['data']
+                )
+            except KeyError:
+                continue
+            except IndexError:
+                break
+
+        return descriptors
+
 
     def save_submodel_descriptors(self, source_name: str, descriptors: list[SubmodelDescriptor]):
         self.save_entities(source_name, descriptors)

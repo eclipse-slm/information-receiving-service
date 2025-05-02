@@ -27,6 +27,23 @@ class CouchDBShellClient(CouchDBClient):
                 continue
         return shells
 
+    def get_shells(self, source_name: str, limit: int, cursor: int) -> List[Dict]:
+        shells = []
+        if source_name is None:
+            rows = self.get_all_docs(limit=limit, skip=cursor)
+        else:
+            rows = self.get_view_docs(source_name, limit, cursor)
+
+        for row in rows:
+            try:
+                shells.append(
+                    # json.loads(json.dumps(row['doc']['data']), cls=AASFromJsonDecoder)
+                    row['doc']['data']
+                )
+            except KeyError:
+                continue
+        return shells
+
     def save_shells(self, source_name: str, shells: List[dict]):
         self.save_entities(source_name, shells)
 
