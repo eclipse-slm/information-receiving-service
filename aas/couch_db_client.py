@@ -7,6 +7,7 @@ import urllib
 from abc import ABC
 from typing import List
 
+import requests
 from basyx.aas.adapter.json import AASToJsonEncoder
 from basyx.aas.model import SpecificAssetId, ExternalReference
 from dotenv import load_dotenv
@@ -24,6 +25,7 @@ def serializer(obj):
 
 class CouchDBClient(ABC):
     log = logging.getLogger(__name__)
+    design_doc_name = "filter_by_source_name"
 
     def __init__(self, database_name: str = None, client_name: str = "default-client"):
         self.client_name: str = client_name
@@ -44,8 +46,19 @@ class CouchDBClient(ABC):
 
 
     @property
+    def total_doc_count(self):
+        return self.db.config()['doc_count']
+
+
+    def total_view_doc_count(self, source_name: str):
+        url = f"{self.base_url_with_creds}/{self.database_name}/_design/{self.design_doc_name}/_view/{source_name}?reduce=true"
+        response = requests.get(url)
+        return response.json()['rows'][0]['value']
+
+
+    @property
     def _view_doc(self):
-        _id = "_design/filter_by_source_name"
+        _id = f"_design/{self.design_doc_name}"
         try:
             return self.db.get(_id)
         except NotFound:
@@ -97,6 +110,16 @@ class CouchDBClient(ABC):
 
     def get_all_docs(self, **kwargs):
         return self.db.all(as_list=True, **kwargs)
+
+    def get_view_docs(self, source_name: str, limit: int, cursor: int):
+        return self.db.query(
+            name=f"{self.design_doc_name}/{source_name}",
+            limit=limit,
+            skip=cursor,
+            as_list=True,
+            include_docs=True,
+            reduce="false"
+        )
 
     def get_doc(self, doc_id: str):
         doc_id_quoted = urllib.parse.quote(doc_id, safe='')
@@ -199,7 +222,10 @@ class CouchDBClient(ABC):
 
     def _get_view_by_source_name(self, source_name: str):
         view_name = source_name
-        view_function = {"map": "function (doc) { if(doc.source_name.indexOf(\""+source_name+"\") !== -1) { emit(doc._id, null)}}"}
+        view_function = {
+            "map": "function (doc) { if(doc.source_name.indexOf(\""+source_name+"\") !== -1) { emit(doc._id, null)}}",
+            "reduce": "_count"
+        }
         return view_name, view_function
 
     def _add_view_to_view_doc(self, view_name, view_function):
