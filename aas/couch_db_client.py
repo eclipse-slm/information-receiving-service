@@ -53,7 +53,10 @@ class CouchDBClient(ABC):
     def total_view_doc_count(self, source_name: str):
         url = f"{self.base_url_with_creds}/{self.database_name}/_design/{self.design_doc_name}/_view/{source_name}?reduce=true"
         response = requests.get(url)
-        return response.json()['rows'][0]['value']
+        try:
+            return response.json()['rows'][0]['value']
+        except KeyError:
+            return None
 
 
     @property
@@ -109,12 +112,15 @@ class CouchDBClient(ABC):
             # print(f"Database \"{self._database_name}\" exists already | Skip create: {e}")
 
     def get_all_docs(self, **kwargs):
-        if kwargs['limit'] == -1:
-            del(kwargs['limit'])
+        try:
+            if kwargs['limit'] < 1:
+                del(kwargs['limit'])
+        except KeyError:
+            pass
         return self.db.all(as_list=True, **kwargs)
 
     def get_view_docs(self, source_name: str, limit: int, cursor: int):
-        if limit == -1:
+        if limit < 1:
             limit = None
         return self.db.query(
             name=f"{self.design_doc_name}/{source_name}",
