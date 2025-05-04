@@ -1,4 +1,5 @@
 import logging
+import os
 import threading
 from typing import List
 
@@ -40,6 +41,10 @@ class GarbageCollector:
             self._log(f"AAS sources changed | {self._latest_aas_sources}")
 
         return aas_sources
+
+    @property
+    def _delete_if_source_not_found(self):
+        return os.getenv("GC_DELETE_IF_SOURCE_NOT_FOUND", "false").lower() == "true"
 
     @property
     def _shell_registry_base_urls(self):
@@ -90,53 +95,69 @@ class GarbageCollector:
 
     def _do_shell_descriptor_garbage_collecting_by_id_request(self):
         self._log(f"By Id Request | Start shell descriptor collecting")
-        shell_descriptors = self._couchdb_shell_descriptor_client.get_all_shell_descriptors()
+        shell_descriptor_docs = self._couchdb_shell_descriptor_client.get_all_shell_descriptors(True)
 
-        for shell_descriptor in shell_descriptors:
+        for shell_descriptor_doc in shell_descriptor_docs:
             found = False
-            for aas_source in self._aas_sources:
-                result = aas_source.request_shell_descriptor(shell_descriptor['id'])
+            source_name = shell_descriptor_doc['doc']['source_name']
+            aas_sources = [aas_source for aas_source in self._aas_sources if aas_source.name.lower() == source_name]
+
+            for aas_source in aas_sources:
+                result = aas_source.request_shell_descriptor(shell_descriptor_doc['id'])
                 if result is not None:
                     found = True
                     break
 
             if not found:
-                self._log(f"By Id Request | Delete shell descriptor | id = {shell_descriptor['id']}")
-                self._couchdb_shell_descriptor_client.delete_shell_descriptor(shell_descriptor['id'])
+                if len(aas_sources) == 0 and not self._delete_if_source_not_found:
+                    continue
+                self._log(f"By Id Request | Delete shell descriptor | id = {shell_descriptor_doc['id']}")
+                self._couchdb_shell_descriptor_client.delete_shell_descriptor(shell_descriptor_doc['id'])
 
 
     def _do_shell_garbage_collecting_by_id_request(self):
         self._log(f"By Id Request | Start shell collecting")
-        shells = self._couchdb_shell_client.get_all_shells()
+        shell_docs = self._couchdb_shell_client.get_all_shells(True)
 
-        for shell in shells:
+        for shell_doc in shell_docs:
             found = False
-            for aas_source in self._aas_sources:
-                result = aas_source.request_shell(shell['id'])
+            source_name = shell_doc['doc']['source_name']
+            aas_sources = [aas_source for aas_source in self._aas_sources if aas_source.name.lower() == source_name]
+            for aas_source in aas_sources:
+                result = aas_source.request_shell(shell_doc['id'])
                 if result is not None:
                     found = True
                     break
 
             if not found:
-                self._log(f"By Id Request | Delete shell | id = {shell['id']}")
-                self._couchdb_shell_client.delete_shell(shell['id'])
+                if len(aas_sources) == 0 and not self._delete_if_source_not_found:
+                    continue
+                self._log(f"By Id Request | Delete shell | id = {shell_doc['id']}")
+                self._couchdb_shell_client.delete_shell(shell_doc['id'])
 
 
     def _do_submodel_descriptor_garbage_collecting_by_id_request(self):
         self._log(f"By Id Request | Submodel descriptor collecting")
-        submodel_descriptors = self._couchdb_submodel_descriptor_client.get_all_submodel_descriptors()
-        shells = self._couchdb_shell_client.get_all_shells()
+        submodel_descriptor_docs = self._couchdb_submodel_descriptor_client.get_all_submodel_descriptors(True)
+        shell_docs = self._couchdb_shell_client.get_all_shells(True)
 
-        for submodel_descriptor in submodel_descriptors:
+        for submodel_descriptor_doc in submodel_descriptor_docs:
             # Get shells containing the submodel descriptor
-            shells_containing_descriptor = self._filter_shells_by_submodel_descriptor(shells, submodel_descriptor)
+            shells_containing_descriptor = self._filter_shells_by_submodel_descriptor(shell_docs, submodel_descriptor_doc)
+            aas_sources = []
+            for shell in shells_containing_descriptor:
+                source_name = shell['doc']['source_name']
+                aas_sources.extend(
+                    [aas_source for aas_source in self._aas_sources if aas_source.name.lower() == source_name]
+                )
+            aas_sources = set(aas_sources)
 
             found = False
-            for aas_source in self._aas_sources:
+            for aas_source in aas_sources:
                 for shell in shells_containing_descriptor:
                     result = aas_source.request_submodel_descriptor(
                         shell['id'],
-                        submodel_descriptor['id']
+                        submodel_descriptor_doc['id']
                     )
                     if result is not None:
                         found = True
@@ -145,25 +166,31 @@ class GarbageCollector:
                     break
 
             if not found:
-                self._log(f"By Id Request | Delete submodel descriptor | id = {submodel_descriptor['id']}")
-                self._couchdb_submodel_descriptor_client.delete_submodel_descriptor(submodel_descriptor['id'])
+                if len(aas_sources) == 0 and not self._delete_if_source_not_found:
+                    continue
+                self._log(f"By Id Request | Delete submodel descriptor | id = {submodel_descriptor_doc['id']}")
+                self._couchdb_submodel_descriptor_client.delete_submodel_descriptor(submodel_descriptor_doc['id'])
 
 
     def _do_submodel_garbage_collecting_by_id_request(self):
         self._log(f"By Id Request | Submodel collecting")
-        submodels = self._couchdb_submodel_client.get_all_submodels()
+        submodel_docs = self._couchdb_submodel_client.get_all_submodels(True)
 
-        for submodel in submodels:
+        for submodel_doc in submodel_docs:
             found = False
-            for aas_source in self._aas_sources:
-                result = aas_source.request_submodel(submodel['id'])
+            source_name = submodel_doc['doc']['source_name']
+            aas_sources = [aas_source for aas_source in self._aas_sources if aas_source.name.lower() == source_name]
+            for aas_source in aas_sources:
+                result = aas_source.request_submodel(submodel_doc['id'])
                 if result is not None:
                     found = True
                     break
 
             if not found:
-                self._log(f"By Id Request | Delete submodel | id = {submodel['id']}")
-                self._couchdb_submodel_client.delete_submodel(submodel['id'])
+                if len(aas_sources) == 0 and not self._delete_if_source_not_found:
+                    continue
+                self._log(f"By Id Request | Delete submodel | id = {submodel_doc['id']}")
+                self._couchdb_submodel_client.delete_submodel(submodel_doc['id'])
 
 
     def _do_shell_garbage_collecting_by_endpoints(self):
