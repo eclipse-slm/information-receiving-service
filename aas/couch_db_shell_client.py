@@ -36,10 +36,7 @@ class CouchDBShellClient(CouchDBClient):
 
         for row in rows:
             try:
-                shells.append(
-                    # json.loads(json.dumps(row['doc']['data']), cls=AASFromJsonDecoder)
-                    row['doc']['data']
-                )
+                shells.append(row['doc']['data'])
             except KeyError:
                 continue
         return shells
