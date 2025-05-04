@@ -40,6 +40,8 @@ class AbstractHandler(ABC):
         return start, end
 
     def get_cursor(self, limit: int, cursor: str, total_count: int):
+        if limit == -1:
+            return None
         start, end = self.get_start_end(limit, cursor)
         return str(end) if end < total_count else None
 
