@@ -40,9 +40,12 @@ class AbstractHandler(ABC):
         return start, end
 
     def get_cursor(self, limit: int, cursor: str, total_count: int):
-        if limit == -1:
+        if limit < 1:
             return None
         start, end = self.get_start_end(limit, cursor)
+        if not total_count:
+            print(f"Failed to get total count")
+            return None
         return str(end) if end < total_count else None
 
     def get_start_end_cursor(self, aas_objects: List[dict], limit: int, cursor: str):
