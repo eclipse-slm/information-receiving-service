@@ -41,14 +41,17 @@ class CouchDBSubmodelDescriptorClient(CouchDBClient):
         return doc['data']
 
 
-    def get_all_submodel_descriptors(self) -> List[dict]:
-        """
-        Get all submodel descriptors from the CouchDB database.
-
-        Returns:
-            List[SubmodelDescriptor]: A list of submodel descriptors.
-        """
+    def get_all_submodel_descriptors(self, get_raw: bool = False) -> List[dict]:
         docs = self.get_all_docs()
+
+        for doc in docs:
+            if "_design" in doc['id']:
+                docs.remove(doc)
+                break
+
+        if get_raw:
+            return docs
+
         submodel_descriptors = []
         for doc in docs:
             try:

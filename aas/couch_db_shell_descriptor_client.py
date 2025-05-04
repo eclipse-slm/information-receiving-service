@@ -32,15 +32,21 @@ class CouchDBShellDescriptorClient(CouchDBClient):
 
         return AssetAdministrationShellDescriptor(**doc['data'])
 
-    def get_all_shell_descriptors(self) -> List[dict]: #'-> list[AssetAdministrationShellDescriptor]:
-        descriptors = []
+    def get_all_shell_descriptors(self, get_raw: bool = False) -> List[dict]:
         docs = self.get_all_docs()
+
+        for doc in docs:
+            if "_design" in doc['id']:
+                docs.remove(doc)
+                break
+
+        if get_raw:
+            return docs
+
+        descriptors = []
         for doc in docs:
             try:
-                descriptors.append(
-                    doc['doc']['data']
-                    # AssetAdministrationShellDescriptor(**doc['doc']['data'])
-                )
+                descriptors.append(doc['doc']['data'])
             except KeyError:
                 continue
             except IndexError:

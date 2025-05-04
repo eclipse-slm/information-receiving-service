@@ -14,8 +14,17 @@ class CouchDBShellClient(CouchDBClient):
         super().__init__(database_name="shells")
         self._create_database()
 
-    def get_all_shells(self) -> List[Dict]:
+    def get_all_shells(self, get_raw: bool = False) -> List[Dict]:
         docs = self.get_all_docs()
+
+        for doc in docs:
+            if "_design" in doc['id']:
+                docs.remove(doc)
+                break
+
+        if get_raw:
+            return docs
+
         shells = []
         for doc in docs:
             try:
