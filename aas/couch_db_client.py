@@ -109,9 +109,13 @@ class CouchDBClient(ABC):
             # print(f"Database \"{self._database_name}\" exists already | Skip create: {e}")
 
     def get_all_docs(self, **kwargs):
+        if kwargs['limit'] == -1:
+            del(kwargs['limit'])
         return self.db.all(as_list=True, **kwargs)
 
     def get_view_docs(self, source_name: str, limit: int, cursor: int):
+        if limit == -1:
+            limit = None
         return self.db.query(
             name=f"{self.design_doc_name}/{source_name}",
             limit=limit,
