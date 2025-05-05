@@ -35,10 +35,8 @@ class AppConfig(BaseModel):
                 aas_source_class(**source_dict)
                 return True
             except ValidationError as e:
-                print(f"Validation error of aas source \"{source_dict['name']}\"")
                 continue
             except MissingTokenError as e:
-                print(f"Missing token error of aas source \"{source_dict['name']}\"")
                 continue
         return False
 
