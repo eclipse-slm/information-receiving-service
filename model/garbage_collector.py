@@ -79,19 +79,27 @@ class GarbageCollector:
 
     def _start_garbage_collecting_by_id_request(self):
         self._log(f"By Id Request | Start garbage collecting | Initial Sources: {[source.name for source in self._aas_sources]}")
-        thread1 = threading.Thread(target=self._do_shell_descriptor_garbage_collecting_by_id_request)
-        thread2 = threading.Thread(target=self._do_shell_garbage_collecting_by_id_request)
-        thread3 = threading.Thread(target=self._do_submodel_descriptor_garbage_collecting_by_id_request)
-        thread4 = threading.Thread(target=self._do_submodel_garbage_collecting_by_id_request)
-        threads = [thread1, thread2, thread3, thread4]
+        targets = [
+            self._do_shell_descriptor_garbage_collecting_by_id_request,
+            self._do_shell_garbage_collecting_by_id_request,
+            self._do_submodel_descriptor_garbage_collecting_by_id_request,
+            self._do_submodel_garbage_collecting_by_id_request
+        ]
+        threads = []
 
         while self._run_garbage_collecting:
-            for thread in threads:
-                if thread is not None and not thread.is_alive():
-                    thread.start()
+            for target in targets:
+                thread = self._start_thread(target)
+                threads.append(thread)
 
             for thread in threads:
                 thread.join()
+
+
+    def _start_thread(self, target):
+        thread = threading.Thread(target=target)
+        thread.start()
+        return thread
 
 
     def _do_shell_descriptor_garbage_collecting_by_id_request(self):
