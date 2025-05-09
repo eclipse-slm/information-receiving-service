@@ -87,7 +87,8 @@ class GarbageCollector:
 
         while self._run_garbage_collecting:
             for thread in threads:
-                thread.start()
+                if thread is not None and not thread.is_alive():
+                    thread.start()
 
             for thread in threads:
                 thread.join()
