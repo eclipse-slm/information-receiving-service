@@ -16,6 +16,11 @@ from model.app_config import load_config
 
 load_dotenv()
 
+def _start_thread(target):
+    thread = threading.Thread(target=target)
+    thread.start()
+    return thread
+
 class GarbageCollector:
     log = logging.getLogger(__name__)
 
@@ -71,12 +76,18 @@ class GarbageCollector:
 
     def _start_garbage_collecting_by_endpoints(self):
         self._log(f"Start garbage collecting by endpoints")
-        thread1 = threading.Thread(target=self._do_shell_garbage_collecting_by_endpoints)
-        thread2 = threading.Thread(target=self._do_submodel_garbage_collecting_by_endpoints)
-        threads = [thread1, thread2]
+        # thread1 = threading.Thread(target=self._do_shell_garbage_collecting_by_endpoints)
+        # thread2 = threading.Thread(target=self._do_submodel_garbage_collecting_by_endpoints)
+        # threads = [thread1, thread2]
+        targets = [
+            self._do_shell_garbage_collecting_by_endpoints,
+            self._do_submodel_garbage_collecting_by_endpoints
+        ]
+        threads = []
 
-        for thread in threads:
-            thread.start()
+        for target in targets:
+            thread = _start_thread(target=target)
+            threads.append(thread)
 
 
     def _start_garbage_collecting_by_id_request(self):
@@ -91,19 +102,13 @@ class GarbageCollector:
 
         while self._run_garbage_collecting:
             for target in targets:
-                thread = self._start_thread(target)
+                thread = _start_thread(target=target)
                 threads.append(thread)
 
             for thread in threads:
                 thread.join()
 
             time.sleep(self._sleep_time_in_seconds)
-
-
-    def _start_thread(self, target):
-        thread = threading.Thread(target=target)
-        thread.start()
-        return thread
 
 
     def _do_shell_descriptor_garbage_collecting_by_id_request(self):
