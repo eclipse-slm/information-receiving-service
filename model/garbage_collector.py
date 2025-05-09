@@ -1,6 +1,7 @@
 import logging
 import os
 import threading
+import time
 from typing import List
 
 from dotenv import load_dotenv
@@ -20,6 +21,7 @@ class GarbageCollector:
 
     def __init__(self):
         self._run_garbage_collecting: bool = True
+        self._sleep_time_in_seconds: int = 60
         self._latest_aas_sources: List = []
         self._couchdb_shell_descriptor_client = CouchDBShellDescriptorClient(client_name=self.__class__.__name__)
         self._couchdb_shell_client = CouchDBShellClient()
@@ -94,6 +96,8 @@ class GarbageCollector:
 
             for thread in threads:
                 thread.join()
+
+            time.sleep(self._sleep_time_in_seconds)
 
 
     def _start_thread(self, target):
