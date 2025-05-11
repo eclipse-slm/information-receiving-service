@@ -1,6 +1,12 @@
 FROM ghcr.io/eclipse-slm/information-receiving-service/base:1.0.0-SNAPSHOT
 
-ENV COUCHDB_HOST=couch-db \
+ENV POLL_SHELL_DESCRIPTORS=true \
+    POLL_SHELLS=true \
+    POLL_SUBMODEL_DESCRIPTORS=true \
+    POLL_SUBMODELS=true \
+    REGISTER_SHELLS=false \
+    REGISTER_SUBMODELS=false \
+    COUCHDB_HOST=couch-db \
     COUCHDB_PORT=5984 \
     COUCHDB_USERNAME=username\
     COUCHDB_PASSWORD=password \
