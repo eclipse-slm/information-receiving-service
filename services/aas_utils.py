@@ -96,6 +96,48 @@ def get_edc_asset_ids_of_submodels_from_shell_descriptor(descriptor: AssetAdmini
 
     return submodel_s_edc_assets
 
+def convert_shell_to_shell_descriptor(shell: dict) -> dict:
+    property_map = {
+        'id_short': 'idShort',
+        'id': 'id'
+    }
+
+    kwargs = {
+        'asset_kind': AssetKind.INSTANCE,
+        'global_asset_id': shell['assetInformation']['globalAssetId'],
+        'endpoints': [],
+        'submodel_descriptors': [],
+    }
+
+    for py_key, aas_key in property_map.items():
+        kwargs[py_key] = shell[aas_key]
+
+    descriptor = AssetAdministrationShellDescriptor(**kwargs)
+
+    return api_client.sanitize_for_serialization(descriptor)
+
+def convert_submodel_to_submodel_descriptor(submodel: dict) -> dict:
+    property_map = {
+        'id_short': 'idShort',
+        'id': 'id',
+        'semantic_id': 'semanticId'
+    }
+    kwargs = {
+        'endpoints': []
+    }
+    for key, value in property_map.items():
+        if value in submodel:
+            if value == 'semanticId' and len(submodel[value]['keys']) == 0:
+                continue
+            kwargs[key] = submodel[value]
+
+    return api_client.sanitize_for_serialization(
+        SubmodelDescriptor(**kwargs)
+    )
+
+
+
+
 def convert_shell_descriptor_to_shell(descriptor: AssetAdministrationShellDescriptor) -> AssetAdministrationShell:
     global_asset_id = descriptor.global_asset_id if descriptor.global_asset_id is not None else descriptor.id
     model_type = ModelType.ASSETADMINISTRATIONSHELL
