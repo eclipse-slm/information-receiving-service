@@ -1,11 +1,13 @@
 import json
 import logging
+import os
 import threading
 import time
 from time import sleep
 from typing import List
 
-from aas_python_http_client import Endpoint, ProtocolInformation
+from aas_python_http_client import Endpoint, ProtocolInformation, AssetAdministrationShellDescriptor
+from aas_python_http_client.rest import ApiException
 from basyx.aas.adapter.json import AASToJsonEncoder
 from basyx.aas.model import SpecificAssetId, ExternalReference
 from requests import ConnectTimeout
@@ -14,11 +16,14 @@ from aas.couch_db_shell_client import CouchDBShellClient
 from aas.couch_db_shell_descriptor_client import CouchDBShellDescriptorClient
 from aas.couch_db_submodel_client import CouchDBSubmodelClient
 from aas.couch_db_submodel_descriptor_client import CouchDBSubmodelDescriptorClient
+from aas.shell_registry_client import ShellRegistryClient
+from aas.submodel_registry_client import SubmodelRegistryClient
 from logger.logger import set_basic_config
 from model.aas_services import AasServices
 from model.aas_source import AasSource
 from services.aas_utils import get_base_url, get_base_url_shell_repo, encode_id, get_base_url_submodel_repo, \
-    convert_dict_keys_to_camel_case
+    convert_dict_keys_to_camel_case, convert_submodel_to_submodel_descriptor, convert_shell_to_shell_descriptor, \
+    api_client
 
 # Configure logging
 set_basic_config()
@@ -34,6 +39,8 @@ class AasSourcePoller:
         else:
             self._sleep_time_in_s: int = 60
         self._stop_polling: bool = False
+        self._local_shell_registry_client = ShellRegistryClient()
+        self._local_submodel_registry_client = SubmodelRegistryClient()
         self._couchdb_shell_descriptor_client = CouchDBShellDescriptorClient(client_name=self.aas_source.name)
         self._couchdb_shell_client = CouchDBShellClient()
         self._couchdb_submodel_descriptor_client = CouchDBSubmodelDescriptorClient(client_name=self.aas_source.name)
@@ -42,6 +49,38 @@ class AasSourcePoller:
 
         self._initiator_thread: threading.Thread = threading.Thread(target=self.do_polling)
         self._initiator_thread.start()
+
+    @property
+    def _poll_shell_descriptors(self):
+        return os.getenv("POLL_SHELL_DESCRIPTORS", 'True').lower() == 'true'
+
+    @property
+    def _poll_shells(self):
+        return os.getenv("POLL_SHELLS", 'True').lower() == 'true'
+
+    @property
+    def _poll_submodel_descriptors(self):
+        return os.getenv("POLL_SUBMODEL_DESCRIPTORS", 'True').lower() == 'true'
+
+    @property
+    def _poll_submodels(self):
+        return os.getenv("POLL_SUBMODELS", 'True').lower() == 'true'
+
+    @property
+    def _register_shells(self):
+        return os.getenv("REGISTER_SHELLS", 'false').lower() == 'true'
+
+    @property
+    def _register_submodels(self):
+        return os.getenv("REGISTER_SUBMODELS", 'false').lower() == 'true'
+
+    @property
+    def _local_shell_registry_base_url(self):
+        return os.getenv("AAS_SHELL_REGISTRY_HOST")
+
+    @property
+    def _local_submodel_registry_base_url(self):
+        return os.getenv("AAS_SUBMODEL_REGISTRY_HOST")
 
 
     def _create_db_views(self):
@@ -60,7 +99,12 @@ class AasSourcePoller:
         while not self._stop_polling:
             self._log("Start")
 
-            threads = self.create_polling_threads()
+            threads = self.create_polling_threads(
+                self._poll_shell_descriptors,
+                self._poll_shells,
+                self._poll_submodel_descriptors,
+                self._poll_submodels
+            )
             self._start_threads(threads)
             self._join_threads(threads)
 
@@ -151,6 +195,8 @@ class AasSourcePoller:
             self._log(f"Polling shells took {end - start:.2f} seconds")
             self._log(f"Found {len(shells)} shells")
             self._couchdb_shell_client.save_shells(self.aas_source.name, shells)
+            if self._register_shells:
+                self._register_shells_in_local_registry(shells)
             return shells
         except (TimeoutError, ConnectTimeout) as e:
             self._log(f"TimeoutError: {e}", level=logging.ERROR)
@@ -162,9 +208,11 @@ class AasSourcePoller:
             submodels = self.aas_source.request_submodels()
             end = time.time()
             elapsed_time = end - start
-            self._log(f"Polling submodels took {end - start:.2f} seconds")
+            self._log(f"Polling submodels took {elapsed_time:.2f} seconds")
             self._log(f"Found {len(submodels)} submodels")
             self._couchdb_submodel_client.save_submodels(self.aas_source.name, submodels)
+            if self._register_submodels:
+                self._register_submodels_in_local_registry(submodels)
             return submodels
         except (TimeoutError, ConnectTimeout) as e:
             self._log(f"TimeoutError: {e}", level=logging.ERROR)
@@ -190,6 +238,70 @@ class AasSourcePoller:
         self._log("Stop polling...")
         self._stop_polling = True
         self._initiator_thread.join()
+
+    def _register_shells_in_local_registry(self, shells: List[dict]):
+        ## Convert Shells into Shell Descriptors
+        shell_descriptors = []
+        for shell in shells:
+            shell_descriptor = convert_shell_to_shell_descriptor(shell)
+            self._add_local_shell_endpoint(shell_descriptor)
+            ## Add local submodel endpoints:
+            self._add_submodel_descriptors_to_local_shell_descriptor(shell, shell_descriptor)
+
+            shell_descriptors.append(shell_descriptor)
+
+        ## Send Shell Descriptors to local registry
+        for sd in shell_descriptors:
+            try:
+                self._local_shell_registry_client.post_asset_administration_shell_descriptor(sd)
+            except ApiException as e:
+                if e.status == 409:
+                    self._local_shell_registry_client.put_asset_administration_shell_descriptor_by_id(sd, encode_id(sd['id']))
+                else:
+                    self._log(f"Error registering shell descriptor: {e}", level=logging.ERROR)
+
+    def _add_submodel_descriptors_to_local_shell_descriptor(self, shell: dict, shell_descriptor: dict):
+        submodel_descriptors = []
+        for submodel in shell['submodels']:
+            submodel_id = submodel['keys'][0]['value']
+            kwargs = {
+                'id': submodel_id,
+                'endpoints': [
+                    {
+                        'interface': 'local',
+                        'protocolInformation': {
+                            'href': get_base_url_submodel_repo() + "/submodels/" + encode_id(submodel_id)
+                        }
+                    }
+                ]
+            }
+            sd = AssetAdministrationShellDescriptor(**kwargs)
+            submodel_descriptors.append(api_client.sanitize_for_serialization(sd))
+
+        shell_descriptor['submodelDescriptors'] = submodel_descriptors
+
+
+    def _register_submodels_in_local_registry(self, submodels: List[dict]):
+        ## Convert Submodel into Submodel Descriptors
+        submodel_descriptors = []
+        for submodel in submodels:
+            try:
+                sd = convert_submodel_to_submodel_descriptor(submodel)
+            except ValueError:
+                self._log(f"Error converting submodel to descriptor | submodel_id = {submodel['id']}", level=logging.ERROR)
+                continue
+            self._add_local_submodel_endpoint(sd)
+            submodel_descriptors.append(sd)
+
+        ## Send Submodel Descriptors to local registry
+        for sd in submodel_descriptors:
+            try:
+                self._local_submodel_registry_client.post_submodel_descriptor(sd)
+            except ApiException as e:
+                if e.status == 409:
+                    self._local_submodel_registry_client.put_submodel_descriptor_by_id(sd, encode_id(sd['id']))
+                else:
+                    self._log(f"Error registering submodel descriptor: {e}", level=logging.ERROR)
 
     def _add_local_endpoints(self, shell_descriptors):
         start = time.time()
