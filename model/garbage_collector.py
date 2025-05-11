@@ -76,9 +76,6 @@ class GarbageCollector:
 
     def _start_garbage_collecting_by_endpoints(self):
         self._log(f"Start garbage collecting by endpoints")
-        # thread1 = threading.Thread(target=self._do_shell_garbage_collecting_by_endpoints)
-        # thread2 = threading.Thread(target=self._do_submodel_garbage_collecting_by_endpoints)
-        # threads = [thread1, thread2]
         targets = [
             self._do_shell_garbage_collecting_by_endpoints,
             self._do_submodel_garbage_collecting_by_endpoints
