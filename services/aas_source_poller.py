@@ -262,7 +262,12 @@ class AasSourcePoller:
 
     def _add_submodel_descriptors_to_local_shell_descriptor(self, shell: dict, shell_descriptor: dict):
         submodel_descriptors = []
-        for submodel in shell['submodels']:
+        submodels = []
+        try:
+            submodels = shell['submodels']
+        except KeyError:
+            self._log(f"Shell {shell['id']} has no property with the name \"submodels\"", level=logging.WARN)
+        for submodel in submodels:
             submodel_id = submodel['keys'][0]['value']
             kwargs = {
                 'id': submodel_id,
@@ -351,9 +356,13 @@ class AasSourcePoller:
 
 
     def _log(self, message: str, level: int = logging.INFO):
+        log_msg = f"{self.aas_source.name} | {message}"
+
         if level == logging.DEBUG:
-            self.log.debug(f"{self.aas_source.name} | {message}")
+            self.log.debug(log_msg)
         elif level == logging.ERROR:
-            self.log.error(f"{self.aas_source.name} | {message}")
+            self.log.error(log_msg)
+        elif level == logging.WARN or level == logging.WARNING:
+            self.log.warning(log_msg)
         else:
-            self.log.info(f"{self.aas_source.name} | {message}")
+            self.log.info(log_msg)
