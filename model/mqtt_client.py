@@ -98,9 +98,11 @@ class MqttClient(BaseFeedReader):
                 topic = self.TOPIC_DELETE_SUBMODEL
             else:
                 topic = self.TOPIC_CREATE_SUBMODEL
-
-        payload = json.dumps(doc['data'])
-        self._client.publish(topic=topic, payload=payload)
+        try:
+            payload = json.dumps(doc['data'])
+            self._client.publish(topic=topic, payload=payload)
+        except KeyError:
+            return
 
     def _on_connect(self, client, userdata, flags, rc):
         self._log("Connected to MQTT broker")
