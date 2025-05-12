@@ -110,7 +110,10 @@ def convert_shell_to_shell_descriptor(shell: dict) -> dict:
     }
 
     for py_key, aas_key in property_map.items():
-        kwargs[py_key] = shell[aas_key]
+        try:
+            kwargs[py_key] = shell[aas_key]
+        except KeyError:
+            continue
 
     descriptor = AssetAdministrationShellDescriptor(**kwargs)
 
