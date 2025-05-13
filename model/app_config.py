@@ -42,11 +42,20 @@ class AppConfig(BaseModel):
 
 
 def load_config() -> AppConfig:
-    file_path = os.getenv("APP_CONFIG_PATH", "config.yml")
-    return load_config_from_path(file_path)
+    app_config = os.getenv("APP_CONFIG")
+    if app_config is not None:
+        app_config_loaded = load_config_from_env(app_config)
+        return app_config_loaded
+    else:
+        file_path = os.getenv("APP_CONFIG_PATH", "config.yml")
+        return load_config_from_path(file_path)
 
 
 def load_config_from_path(path: str = "config.yml") -> AppConfig:
     with open(path, 'r') as file:
         config_data = yaml.safe_load(file)
+    return AppConfig(**config_data)
+
+def load_config_from_env(app_config_json: str) -> AppConfig:
+    config_data = yaml.safe_load(app_config_json)
     return AppConfig(**config_data)

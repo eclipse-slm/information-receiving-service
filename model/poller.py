@@ -34,18 +34,25 @@ class Poller:
 
 
     def _watch_config(self):
-        sleep_time_in_seconds = 60
-        self.log.info("Start watching config file...")
-        while True:
+        app_config_env = os.getenv("APP_CONFIG")
+        if app_config_env is None:
+            sleep_time_in_seconds = 60
+
+            self.log.info("Start watching config file...")
+            while True:
+                config = load_config()
+                for aas_source in config.aas_servers:
+                    self._start_aas_source_poller(aas_source)
+
+                self.log.info(f"Restart watching config file in {sleep_time_in_seconds} seconds...")
+                time.sleep(sleep_time_in_seconds)
+
+        else:
+            self.log.info("Start loading config from environment...")
             config = load_config()
             for aas_source in config.aas_servers:
                 self._start_aas_source_poller(aas_source)
 
-            self.log.info(f"Restart watching config file in {sleep_time_in_seconds} seconds...")
-            time.sleep(sleep_time_in_seconds)
-
-        self._stop_aas_source_poller()
-        self.log.info("Stop watching config file.")
 
     def _start_aas_source_poller(self, aas_source: AasSource):
         if len(self._polling_white_list) > 0:

@@ -39,6 +39,8 @@ aas-servers:
       submodel-repository: "https://submodel-repository.local"  # base URL of (remote) Submodel Repository
 ```
 
+As an alternative to the config file, the above configuration can also be passed as JSON via the environment variable `APP_CONFIG`.
+
 ### Start IRS (Information Receiving Service)
 
 Use docker-compose.yml in root folder of this project to start the IRS:
