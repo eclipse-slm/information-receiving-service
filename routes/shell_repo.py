@@ -88,14 +88,19 @@ def get_asset_administration_shell(aasIdentifier: str):
     # descriptor = get_remote_shell_descriptor(aas_id_dec)
 
     aas_id_dec = decode_id(aasIdentifier)
-    shell_descriptor = shell_descriptor_handler.shell_descriptor(identifier=aas_id_dec)
-    if shell_descriptor is None:
-        raise HTTPException(status_code=404, detail="Related shell descriptor not found")
+    # shell_descriptor = shell_descriptor_handler.shell_descriptor(identifier=aas_id_dec)
+    # if shell_descriptor is None:
+    #     raise HTTPException(status_code=404, detail="Related shell descriptor not found")
+    #
+    # submodel_references = extract_submodel_references_from_shell_descriptor(shell_descriptor)
+    # submodel_references_dict = [ref.to_dict() for ref in submodel_references]
 
-    submodel_references = extract_submodel_references_from_shell_descriptor(shell_descriptor)
-    submodel_references_dict = [ref.to_dict() for ref in submodel_references]
+
+    shell = shell_handler.shell(identifier=aas_id_dec)
+    submodel_reference_dict = shell['submodels']
 
     return get_paged_result_object(
-        submodel_references_dict,
+        submodel_reference_dict,
+        # submodel_references_dict,
         None
     )
