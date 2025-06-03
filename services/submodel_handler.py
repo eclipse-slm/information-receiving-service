@@ -14,6 +14,26 @@ class SubmodelHandler(AbstractHandler):
         self.submodel_descriptor_handler = SubmodelDescriptorHandler()
         self._app_config: AppConfig = load_config()
 
+    @staticmethod
+    def get_submodel_element_by_id(submodel, id_short_path: str):
+        submodel_elements = submodel['submodelElements']
+        id_shorts = id_short_path.split('.')
+        submodel_element = None
+
+        for id_short in id_shorts:
+            found = False
+            for element in submodel_elements:
+                if element['idShort'] == id_short:
+                    submodel_element = element
+                    submodel_elements = element.get('value', [])
+                    found = True
+                    break
+
+            if not found:
+                return None
+
+        return submodel_element
+
     def _total_count(self, aas_source_name: str) -> int:
         if aas_source_name is None:
             return self.couch_db_submodel_client.total_doc_count
