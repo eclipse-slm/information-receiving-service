@@ -66,13 +66,22 @@ def get_submodel_value_only(submodelIdentifier: str):
     return submodel
 
 
-# @router.get(path="/submodels/{submodelIdentifier}/submodel-elements/{submodelElementIdentifier}", status_code=200, description="Returns a specific Submodel Element")
-# def get_submodel_element(submodelIdentifier: str, submodelElementIdentifier: str, cached: bool = True):
-#     if cached:
-#         submodel = get_cached_submodel(decode_id(submodelIdentifier))
-#     else:
-#         submodel = get_remote_submodel(decode_id(submodelIdentifier))
-#
-#     sme = submodel.submodel_element.get(attribute_name="id_short", attribute_value=submodelElementIdentifier)
-#
-#     return json.loads(json.dumps(sme, cls=AASToJsonEncoder))
+@router.get(path="/submodels/{submodelIdentifier}/submodel-elements/{submodelElementIdentifier}", status_code=200, description="Returns a specific Submodel Element")
+def get_submodel_element(submodelIdentifier: str, submodelElementIdentifier: str): #, cached: bool = True):
+    decoded_id = decode_id(submodelIdentifier)
+    submodel = submodel_handler.submodel(decoded_id)
+    submodel_element = SubmodelHandler.get_submodel_element_by_id(submodel, submodelElementIdentifier)
+
+    if submodel_element is None:
+        raise HTTPException(status_code=404, detail="Submodel Element not found")
+
+    return submodel_element
+
+    # if cached:
+    #     submodel = get_cached_submodel(decode_id(submodelIdentifier))
+    # else:
+    #     submodel = get_remote_submodel(decode_id(submodelIdentifier))
+    #
+    # sme = submodel.submodel_element.get(attribute_name="id_short", attribute_value=submodelElementIdentifier)
+    #
+    # return json.loads(json.dumps(sme, cls=AASToJsonEncoder))
