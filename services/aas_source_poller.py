@@ -229,6 +229,8 @@ class AasSourcePoller:
                 submodel_descriptors.extend(shell_descriptor['submodelDescriptors'])
             except KeyError:
                 continue
+            except TypeError:
+                continue
 
         self._log(f"Found {len(submodel_descriptors)} submodel descriptors")
         self._couchdb_submodel_descriptor_client.save_submodel_descriptors(self.aas_source.name, submodel_descriptors)
