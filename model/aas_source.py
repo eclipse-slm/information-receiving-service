@@ -177,7 +177,7 @@ class AasSource(BaseModel):
 
     def request_submodel_descriptors(self) -> List[SubmodelDescriptor]:
         response = self._request_submodel_descriptors(str(0), self._limit)
-        return response.result
+        return response['result']
 
 
     def request_submodel_descriptor(self, aas_identifier: str, sm_identifier: str) -> SubmodelDescriptor:
