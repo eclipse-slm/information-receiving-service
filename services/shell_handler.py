@@ -79,7 +79,7 @@ class ShellHandler(AbstractHandler):
             List[str]: A list of shell ids linked to the Asset identifier.
         """
         shell_ids = []
-        for shell in self.shells:
+        for shell in self.shells():
             if shell['assetInformation']['globalAssetId'] == asset_id:
                 shell_ids.append(shell['id'])
         return shell_ids
