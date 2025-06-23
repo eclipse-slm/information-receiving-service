@@ -351,9 +351,10 @@ class AasSourcePoller:
 
     def _add_local_submodel_endpoint(self, submodel_descriptor: dict):
         local_submodel_endpoint = convert_dict_keys_to_camel_case(Endpoint(
-            interface="local",
+            interface='SUBMODEL-3.0',
             protocol_information=ProtocolInformation(
-                href=get_base_url_submodel_repo() + "/submodels/" + encode_id(submodel_descriptor['id'])
+                href=get_base_url_submodel_repo() + "/submodels/" + encode_id(submodel_descriptor['id']),
+                endpoint_protocol="http"
             )
         ).to_dict())
         submodel_descriptor['endpoints'].insert(0, local_submodel_endpoint)
