@@ -332,7 +332,8 @@ class AasSourcePoller:
         local_shell_endpoint = convert_dict_keys_to_camel_case(Endpoint(
             interface="local",
             protocol_information=ProtocolInformation(
-                href=get_base_url_shell_repo() + "/shells/" + encode_id(shell_descriptor['id'])
+                href=get_base_url_shell_repo() + "/shells/" + encode_id(shell_descriptor['id']),
+                endpoint_protocol="http"
             )
         ).to_dict())
         shell_descriptor['endpoints'].insert(0, local_shell_endpoint)
