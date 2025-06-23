@@ -277,7 +277,7 @@ class AasSourcePoller:
                     {
                         'interface': 'local',
                         'protocolInformation': {
-                            'href': get_base_url_submodel_repo() + "/submodels/" + encode_id(submodel_id)
+                            'href': get_base_url_submodel_repo() + "/submodels/" + encode_id(submodel_id),
                             'endpointProtocol': 'http'
                         }
                     }
