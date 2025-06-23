@@ -275,7 +275,7 @@ class AasSourcePoller:
                 'id': submodel_id,
                 'endpoints': [
                     {
-                        'interface': 'local',
+                        'interface': 'SUBMODEL-3.0',
                         'protocolInformation': {
                             'href': get_base_url_submodel_repo() + "/submodels/" + encode_id(submodel_id),
                             'endpointProtocol': 'http'
@@ -331,7 +331,7 @@ class AasSourcePoller:
             return
 
         local_shell_endpoint = convert_dict_keys_to_camel_case(Endpoint(
-            interface="local",
+            interface="AAS-3.0",
             protocol_information=ProtocolInformation(
                 href=get_base_url_shell_repo() + "/shells/" + encode_id(shell_descriptor['id']),
                 endpoint_protocol="http"
