@@ -283,5 +283,13 @@
         </pluginManagement>
 
     </build>
+
+    <repositories>
+        <repository>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/eclipse-slm/slm</url>
+        </repository>
+    </repositories>
+
 </project>
 
