@@ -1,0 +1,33 @@
+services:
+  irs-poller:
+    image: ghcr.io/eclipse-slm/information-receiving-service/poller:${VERSION}
+    restart: always
+    environment:
+      POLLING_WHITE_LIST:
+    volumes:
+      - ./config.yml:/app/config.yml
+
+  irs-api:
+    image: ghcr.io/eclipse-slm/information-receiving-service/api:${VERSION}
+    restart: always
+    ports:
+      - "3000:${SERVICE_PORT}"
+    volumes:
+      - ./config.yml:/app/config.yml
+
+  irs-gc:
+    image: ghcr.io/eclipse-slm/information-receiving-service/gc:${VERSION}
+    restart: always
+    volumes:
+      - ./config.yml:/app/config.yml
+
+  couch-db:
+    image: couchdb:3.2
+    restart: always
+    ports:
+      - "5984:${COUCHDB_PORT}"
+    environment:
+      COUCHDB_USER: ${COUCHDB_USERNAME}
+      COUCHDB_PASSWORD: ${COUCHDB_PASSWORD}
+    volumes:
+      - ./local.ini:/opt/couchdb/etc/local.ini

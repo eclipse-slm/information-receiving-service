@@ -1,0 +1,72 @@
+ARG PYTHON_VERSION=3.10.2
+FROM amazoncorretto:17 as build
+
+ENV OPENAPI_GENERATOR_JAR_FILE_NAME=openapi-generator-cli.jar
+ENV OPENAPI_GENERATOR_DOWNLOAD_URL=https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/7.2.0/openapi-generator-cli-7.2.0.jar \
+    OPENAPI_GENERATOR_EXEC="java -jar ${OPENAPI_GENERATOR_JAR_FILE_NAME}" \
+    OPENAPI_DEF_URL="https://api.swaggerhub.com/apis/BIG_1/tractusx-edc/0.6.0" \
+    OPENAPI_OUTPUT_FILENAME=openapi.json \
+    OPENAPI_TARGET_LANGUAGE=python \
+    OPENAPI_CLIENT_TARGET_FOLDER=/output \
+    PYTHON_MODULE_NAME="tx_edc_connector_client"
+
+### TX EDC Connector Client:
+RUN yum install -y wget jq && \
+    mkdir -p /tx_edc_connector_client
+#COPY edc_client/_scripts/build.sh edc_client/_scripts/preprocessing.sh edc_client/_scripts/replace_schemas.sh edc_client/_scripts/rename_schema.sh edc_client/_schemas/schemas.json /tx_edc_connector_client/
+
+WORKDIR /tx_edc_connector_client
+
+RUN wget ${OPENAPI_GENERATOR_DOWNLOAD_URL} -O ${OPENAPI_GENERATOR_JAR_FILE_NAME}
+
+RUN ${OPENAPI_GENERATOR_EXEC} generate -i "${OPENAPI_DEF_URL}" \
+      -g "${OPENAPI_TARGET_LANGUAGE}" \
+      -o "${OPENAPI_CLIENT_TARGET_FOLDER}" \
+      --package-name "${PYTHON_MODULE_NAME}" \
+      --enable-post-process-file
+
+FROM python:${PYTHON_VERSION} as base
+
+ENV SERVICE_BASE_URL=http://localhost \
+    SERVICE_PORT=3000 \
+    CONNECTOR_BASE_URL=http://dataconsumer-1-controlplane.tx.test \
+    CONNECTOR_XAPI_KEY=TEST1 \
+    COUCHDB_HOST=localhost \
+    COUCHDB_PORT=5984 \
+    COUCHDB_USERNAME=username \
+    COUCHDB_PASSWORD=password \
+    COUCHDB_DB_NAME=crawler \
+    AAS_SHELL_REGISTRY_HOST=http://consumer.shell-registry.tx.test \
+    AAS_SHELL_REPOSITORY_HOST=http://consumer.shell-repository.tx.test \
+    AAS_SUBMODEL_REGISTRY_HOST=http://consumer.submodel-registry.tx.test \
+    AAS_SUBMODEL_REPOSITORY_HOST=http://consumer.submodel-repository.tx.test \
+    CRAWLER_INTERVAL_S=60 \
+    EDC_CLIENT_SOURCE_FOLDER=/tx_edc_connector_client
+
+RUN mkdir -p "${EDC_CLIENT_SOURCE_FOLDER}"
+
+COPY --from=build /output "${EDC_CLIENT_SOURCE_FOLDER}"
+
+RUN cd "${EDC_CLIENT_SOURCE_FOLDER}" && \
+    pip install -r requirements.txt && \
+    python setup.py install
+
+WORKDIR /app
+
+ARG UID=10001
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "${UID}" \
+    appuser
+
+RUN --mount=type=cache,target=/root/.cache/pip \
+    --mount=type=bind,source=requirements.txt,target=requirements.txt \
+    python -m pip install -r requirements.txt
+
+USER appuser
+
+COPY . .

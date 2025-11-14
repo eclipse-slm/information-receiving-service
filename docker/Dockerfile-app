@@ -1,0 +1,5 @@
+FROM ghcr.io/eclipse-slm/information-receiving-service/base:1.0.0-SNAPSHOT
+
+EXPOSE $SERVICE_PORT
+
+CMD python app.py
