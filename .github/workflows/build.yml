@@ -42,6 +42,11 @@ jobs:
               "id": "ghcr.io",
               "username": "${{github.actor}}",
               "password": "${{secrets.GITHUB_TOKEN}}"
+            },
+            {
+              "id": "github",
+              "username": "${{github.actor}}",
+              "password": "${{secrets.GITHUB_TOKEN}}"
             }
           ]'
 
