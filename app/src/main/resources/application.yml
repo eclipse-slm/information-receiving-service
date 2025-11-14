@@ -1,0 +1,82 @@
+### Application
+application:
+  name: "^project.artifactId^"
+  version: "^project.version^"
+  timestamp: "^timestamp^"
+
+### Deployment
+deployment:
+  scheme: "http"
+  hostname: "localhost"
+  port: ${server.port}
+  path: ""
+  url: ${deployment.scheme}://${deployment.hostname}:${deployment.port}${deployment.path}
+
+### Security
+security:
+  enabled: false
+  auth-white-list: ""
+  origins: "*"
+  certificate: classpath:./certs/resource.crt
+  private-key: classpath:./certs/resource.key
+
+# JWT Configuration
+jwt:
+  auth:
+    issuer-uri: https://slm.dev-vm.local/auth/realms/fabos
+    converter:
+      resource-id: resource_selfdescriptionservices
+      principal-attribute: preferred_username
+
+### Server / API
+server:
+  port: 8080
+  error:
+    include-message: always
+  ssl:
+    enabled: ${security.enabled}
+    bundle: "web-server"
+
+### OpenAPI
+open-api:
+  title: Information Receiving Service
+  description: REST API of Information Receiving Service
+  version: "^project.version^"
+  contact:
+    name: Fraunhofer IPA
+    url: https://www.ipa.fraunhofer.de
+    email: matthias.schneider@ipa.fraunhofer.de
+springdoc:
+  swagger-ui:
+    disable-swagger-default-url: true
+    tags-sorter: alpha
+    operations-sorter: alpha
+    oauth:
+      clientId: ui
+      clientSecret: unused-and-not-required
+
+### Spring
+spring:
+  application:
+    name: selfdescriptionservice
+  main:
+    allow-bean-definition-overriding: true
+  ssl:
+    bundle:
+      pem:
+        web-server:
+          keystore:
+            certificate: ""
+            privateKey: ""
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${jwt.auth.issuer-uri}
+
+### Management
+management:
+  endpoints:
+    web.exposure.include: health,info
+  info:
+    git.enabled: false
