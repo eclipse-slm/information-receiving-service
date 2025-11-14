@@ -109,6 +109,14 @@
                 <artifactId>maven-site-plugin</artifactId>
                 <version>3.12.1</version>
             </plugin>
+            <!-- Deployment !-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
             <!-- Compilation: Kotlin !-->
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
@@ -283,14 +291,6 @@
         </pluginManagement>
 
     </build>
-
-    <distributionManagement>
-        <repository>
-            <id>github-maven</id>
-            <name>GitHub Packages</name>
-            <url>https://maven.pkg.github.com/eclipse-slm/information-receiving-service</url>
-        </repository>
-    </distributionManagement>
 
     <repositories>
         <repository>
