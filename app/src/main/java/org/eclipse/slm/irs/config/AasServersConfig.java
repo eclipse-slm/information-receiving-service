@@ -1,15 +1,9 @@
 package org.eclipse.slm.irs.config;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-
 import java.util.List;
 
-@Configuration
-@ConfigurationProperties(prefix = "")
-@PropertySource(value = "${config.file-path}", factory = YamlPropertySourceFactory.class)
 public class AasServersConfig {
+
     private List<AasServer> aasServers;
 
     public List<AasServer> getAasServers() {
@@ -23,7 +17,6 @@ public class AasServersConfig {
         private String name;
         private String url;
         private Auth auth;
-        private int pollingIntervalS;
 
         public String getName() { return name; }
         public void setName(String name) { this.name = name; }
@@ -33,9 +26,6 @@ public class AasServersConfig {
 
         public Auth getAuth() { return auth; }
         public void setAuth(Auth auth) { this.auth = auth; }
-
-        public int getPollingIntervalS() { return pollingIntervalS; }
-        public void setPollingIntervalS(int pollingIntervalS) { this.pollingIntervalS = pollingIntervalS; }
 
         public static class Auth {
             private String authType;
