@@ -80,3 +80,7 @@ management:
     web.exposure.include: health,info
   info:
     git.enabled: false
+
+### Config
+config:
+  file-path: classpath:config.yml

@@ -1,0 +1,13 @@
+aas-servers:
+- name: "AASX Server 1"
+  url: "https://example-1.com/aasx-server-1"
+  auth:
+    auth-type: oauth2
+    client-id: "your-client-id"
+    client-secret: "your-client-secret"
+    token-url: "https://example-1.com/token"
+- name: "AASX Server 2"
+  url: "https://example-1.com/aasx-server-1"
+  auth:
+    auth-type: apikey
+    api-key: "your-api-key"

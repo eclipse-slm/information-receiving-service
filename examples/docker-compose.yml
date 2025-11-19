@@ -1,0 +1,8 @@
+services:
+  app:
+    image: ghcr.io/eclipse-slm/information-receiving-service/app:${IRS_VERSION}
+    restart: unless-stopped
+    volumes:
+      - "./config.yml:/app/config.yml:ro"
+    ports:
+      - "8080:8080"

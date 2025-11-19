@@ -8,7 +8,7 @@ import java.util.List;
 
 @Configuration
 @ConfigurationProperties(prefix = "")
-@PropertySource(value = "classpath:config.yml", factory = YamlPropertySourceFactory.class)
+@PropertySource(value = "${config.file-path}", factory = YamlPropertySourceFactory.class)
 public class AasServersConfig {
     private List<AasServer> aasServers;
 
