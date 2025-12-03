@@ -29,7 +29,7 @@
         <maven.plugin.apache.compiler.version>3.13.0</maven.plugin.apache.compiler.version>
         <maven.plugin.apache.deploy.version>3.1.3</maven.plugin.apache.deploy.version>
 
-        <springdoc.openapi.version>2.5.0</springdoc.openapi.version>
+        <springdoc.openapi.version>2.8.14</springdoc.openapi.version>
         <swagger.version>2.2.22</swagger.version>
         <common.aas.version>1.4.0-SNAPSHOT</common.aas.version>
         <basyx.version>2.0.0-milestone-07</basyx.version>

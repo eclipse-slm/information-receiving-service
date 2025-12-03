@@ -21,6 +21,7 @@ import org.eclipse.digitaltwin.basyx.submodelrepository.http.pagination.GetSubmo
 import org.eclipse.digitaltwin.basyx.submodelservice.value.SubmodelElementValue;
 import org.eclipse.digitaltwin.basyx.submodelservice.value.SubmodelValueOnly;
 import org.eclipse.slm.irs.exceptions.MethodNotSupportedException;
+import org.eclipse.slm.irs.services.submodelrepository.SubmodelRepositoryService;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,8 +36,11 @@ public class SubmodelRepositoryApiController implements SubmodelRepositoryHTTPAp
 
     private final SubmodelRepository repository;
 
-    public SubmodelRepositoryApiController(SubmodelRepository repository) {
+    private final SubmodelRepositoryService submodelRepositoryService;
+
+    public SubmodelRepositoryApiController(SubmodelRepository repository, SubmodelRepositoryService submodelRepositoryService) {
         this.repository = repository;
+        this.submodelRepositoryService = submodelRepositoryService;
     }
     
     @Override
@@ -65,8 +69,12 @@ public class SubmodelRepositoryApiController implements SubmodelRepositoryHTTPAp
     }
 
     @Override
-    public ResponseEntity<Submodel> getSubmodelById(Base64UrlEncodedIdentifier submodelIdentifier, @Valid String level, @Valid String extent) {
-        return new ResponseEntity<Submodel>(repository.getSubmodel(submodelIdentifier.getIdentifier()), HttpStatus.OK);
+    public ResponseEntity<Submodel> getSubmodelById(Base64UrlEncodedIdentifier base64UrlEncodedSubmodelIdentifier, @Valid String level, @Valid String extent) {
+        var submodelIdentifier = Base64UrlEncodedIdentifier.fromEncodedValue(base64UrlEncodedSubmodelIdentifier.getIdentifier());
+
+        var aas = submodelRepositoryService.getSubmodelById(submodelIdentifier.getIdentifier());
+
+        return ResponseEntity.ok(aas);
     }
 
     @Override

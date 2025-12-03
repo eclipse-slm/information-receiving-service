@@ -1,6 +1,7 @@
 package org.eclipse.slm.irs.api.aas;
 
 import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import org.eclipse.digitaltwin.aas4j.v3.model.AssetAdministrationShell;
@@ -15,12 +16,15 @@ import org.eclipse.slm.irs.exceptions.MethodNotSupportedException;
 import org.eclipse.slm.irs.services.shellrepository.ShellRepositoryService;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 @RestController
+@RequestMapping("")
+@Tag(name = "Shell Repository API")
 public class ShellRepositoryApiController implements AasRepositoryHTTPApi {
 
     private final ShellRepositoryService shellRepositoryService;

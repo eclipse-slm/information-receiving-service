@@ -1,6 +1,6 @@
 package org.eclipse.slm.irs.services.discovery;
 
-import org.eclipse.slm.irs.clients.aas.discovery.DiscoveryClientFactory;
+import org.eclipse.slm.irs.clients.aas.DiscoveryClientFactory;
 import org.eclipse.slm.irs.config.AasServersConfig;
 import org.springframework.stereotype.Component;
 
