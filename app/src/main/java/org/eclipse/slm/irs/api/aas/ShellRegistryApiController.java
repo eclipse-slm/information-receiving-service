@@ -6,6 +6,7 @@ import org.eclipse.digitaltwin.aas4j.v3.model.AssetKind;
 import org.eclipse.digitaltwin.aas4j.v3.model.SubmodelDescriptor;
 import org.eclipse.slm.common.aas.model.shellregistry.respones.GetAssetAdministrationShellDescriptorsResult;
 import org.eclipse.slm.common.aas.model.shellregistry.respones.GetSubmodelDescriptorsResult;
+import org.eclipse.slm.irs.exceptions.MethodNotImplementedException;
 import org.eclipse.slm.irs.exceptions.MethodNotSupportedException;
 import org.eclipse.slm.irs.services.shellregistry.ShellRegistryService;
 import org.eclipse.slm.irs.utils.Base64Util;
@@ -23,12 +24,12 @@ public class ShellRegistryApiController implements ShellRegistryApi {
 
     @Override
     public ResponseEntity<GetAssetAdministrationShellDescriptorsResult> getAllAssetAdministrationShellDescriptors(Integer limit, String cursor, AssetKind assetKind, String assetType) {
-        return null;
+        throw new MethodNotImplementedException();
     }
 
     @Override
     public ResponseEntity<GetSubmodelDescriptorsResult> getAllSubmodelDescriptorsThroughSuperpath(String aasIdentifierEncoded, Integer limit, String cursor) {
-        return null;
+        throw new MethodNotImplementedException();
     }
 
     @Override
