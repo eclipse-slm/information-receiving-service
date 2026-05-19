@@ -96,6 +96,8 @@ public class AasServersConfig {
             private String apiKey;
             private String secret;
             private String loginUrl;
+            private String username;
+            private String password;
 
             public String getAuthType() { return authType; }
             public void setAuthType(String authType) { this.authType = authType; }
@@ -117,6 +119,22 @@ public class AasServersConfig {
 
             public String getLoginUrl() { return loginUrl; }
             public void setLoginUrl(String loginUrl) { this.loginUrl = loginUrl; }
+
+            public String getUsername() {
+                return username;
+            }
+
+            public void setUsername(String username) {
+                this.username = username;
+            }
+
+            public String getPassword() {
+                return password;
+            }
+
+            public void setPassword(String password) {
+                this.password = password;
+            }
         }
     }
 }

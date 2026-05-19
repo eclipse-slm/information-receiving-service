@@ -2,6 +2,7 @@ package org.eclipse.slm.irs.clients.aas;
 
 import org.eclipse.slm.aas.clients.auth.ApiKeyAuthRequestInterceptor;
 import org.eclipse.slm.aas.clients.auth.AuthRequestInterceptor;
+import org.eclipse.slm.aas.clients.auth.BasicAuthRequestInterceptor;
 import org.eclipse.slm.aas.clients.auth.OAuth2AuthRequestInterceptor;
 import org.eclipse.slm.irs.config.AasServersConfig;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,10 @@ public abstract class AbstractAasClientFactory<T> {
         AuthRequestInterceptor authRequestInterceptor = null;
         if (aasServerConfig.getAuth() != null) {
             authRequestInterceptor = switch (aasServerConfig.getAuth().getAuthType()) {
+                case "basic" -> new BasicAuthRequestInterceptor(
+                        aasServerConfig.getAuth().getUsername(),
+                        aasServerConfig.getAuth().getPassword()
+                );
                 case "oauth2" -> new OAuth2AuthRequestInterceptor(
                         aasServerConfig.getAuth().getTokenUrl(),
                         aasServerConfig.getAuth().getClientId(),
