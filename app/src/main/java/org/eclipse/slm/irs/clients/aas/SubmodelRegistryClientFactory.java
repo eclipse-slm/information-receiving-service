@@ -14,4 +14,8 @@ public class SubmodelRegistryClientFactory extends AbstractAasClientFactory<Subm
         return client;
     }
 
+    @Override
+    protected String getUrl(AasServersConfig.AasServer aasServerConfig) {
+        return aasServerConfig.getSubmodelRegistry();
+    }
 }

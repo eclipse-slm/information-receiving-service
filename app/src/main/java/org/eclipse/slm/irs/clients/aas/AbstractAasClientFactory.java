@@ -11,17 +11,22 @@ public abstract class AbstractAasClientFactory<T> {
 
     protected abstract T createClient(String url, AuthRequestInterceptor authRequestInterceptor);
 
-    public T create(AasServersConfig.AasServer aasServerConfig) {
-        var authRequestInterceptor = switch (aasServerConfig.getAuth().getAuthType()) {
-            case "oauth2" -> new OAuth2AuthRequestInterceptor(
-                    aasServerConfig.getAuth().getTokenUrl(),
-                    aasServerConfig.getAuth().getClientId(),
-                    aasServerConfig.getAuth().getClientSecret()
-            );
-            case "apikey" -> new ApiKeyAuthRequestInterceptor(aasServerConfig.getAuth().getApiKey());
+    protected abstract String getUrl(AasServersConfig.AasServer aasServerConfig);
 
-            default -> throw new IllegalArgumentException("Unsupported auth type: " + aasServerConfig.getAuth().getAuthType());
-        };
-        return createClient(aasServerConfig.getUrl(), authRequestInterceptor);
+    public T create(AasServersConfig.AasServer aasServerConfig) {
+        AuthRequestInterceptor authRequestInterceptor = null;
+        if (aasServerConfig.getAuth() != null) {
+            authRequestInterceptor = switch (aasServerConfig.getAuth().getAuthType()) {
+                case "oauth2" -> new OAuth2AuthRequestInterceptor(
+                        aasServerConfig.getAuth().getTokenUrl(),
+                        aasServerConfig.getAuth().getClientId(),
+                        aasServerConfig.getAuth().getClientSecret()
+                );
+                case "apikey" -> new ApiKeyAuthRequestInterceptor(aasServerConfig.getAuth().getApiKey());
+
+                default -> throw new IllegalArgumentException("Unsupported auth type: " + aasServerConfig.getAuth().getAuthType());
+            };
+        }
+        return createClient(this.getUrl(aasServerConfig), authRequestInterceptor);
     }
 }

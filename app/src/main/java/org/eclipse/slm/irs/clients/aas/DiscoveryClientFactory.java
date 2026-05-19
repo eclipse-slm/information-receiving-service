@@ -14,4 +14,9 @@ public class DiscoveryClientFactory extends AbstractAasClientFactory<DiscoveryCl
         return client;
     }
 
+    @Override
+    protected String getUrl(AasServersConfig.AasServer aasServerConfig) {
+        return aasServerConfig.getDiscovery();
+    }
+
 }

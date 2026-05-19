@@ -49,7 +49,8 @@ public class ConfigLoader {
 
             var classpathStream = getClass().getClassLoader().getResourceAsStream(configFilePath.replace("classpath:", ""));
             if (classpathStream != null) {
-                return yamlMapper.readValue(classpathStream, AasServersConfig.class);
+                var config = yamlMapper.readValue(classpathStream, AasServersConfig.class);
+                return config;
             }
         }
 

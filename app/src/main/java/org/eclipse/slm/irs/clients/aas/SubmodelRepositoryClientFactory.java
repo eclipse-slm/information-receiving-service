@@ -13,4 +13,9 @@ public class SubmodelRepositoryClientFactory extends AbstractAasClientFactory<Su
         var client = new SubmodelRepositoryClient(url, authRequestInterceptor);
         return client;
     }
+
+    @Override
+    protected String getUrl(AasServersConfig.AasServer aasServerConfig) {
+        return aasServerConfig.getSubmodelRepository();
+    }
 }

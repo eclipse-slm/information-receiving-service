@@ -14,4 +14,9 @@ public class ShellRepositoryClientFactory extends AbstractAasClientFactory<AasRe
         return client;
     }
 
+    @Override
+    protected String getUrl(AasServersConfig.AasServer aasServerConfig) {
+        return aasServerConfig.getShellRegistry();
+    }
+
 }

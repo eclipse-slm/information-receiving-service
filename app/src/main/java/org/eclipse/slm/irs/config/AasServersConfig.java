@@ -1,7 +1,11 @@
 package org.eclipse.slm.irs.config;
 
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.util.List;
+import java.util.Map;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AasServersConfig {
 
     private List<AasServer> aasServers;
@@ -13,19 +17,76 @@ public class AasServersConfig {
         this.aasServers = aasServers;
     }
 
+    public static class AasServiceConfig {
+        private AasServiceType serviceType;
+        private String serviceUrl;
+
+        public AasServiceType getServiceType() { return serviceType; }
+        public void setServiceType(AasServiceType serviceType) { this.serviceType = serviceType; }
+
+        public String getServiceUrl() { return serviceUrl; }
+        public void setServiceUrl(String serviceUrl) { this.serviceUrl = serviceUrl; }
+    }
+
     public static class AasServer {
         private String name;
         private String url;
+        private Map<AasServiceType, AasServiceConfig> serviceUrls = Map.of();
         private Auth auth;
 
         public String getName() { return name; }
         public void setName(String name) { this.name = name; }
 
         public String getUrl() { return url; }
-        public void setUrl(String url) { this.url = url; }
+        public void setUrl(String url) {
+            this.url = url;
+        }
 
         public Auth getAuth() { return auth; }
         public void setAuth(Auth auth) { this.auth = auth; }
+
+        public Map<AasServiceType, AasServiceConfig> getServiceUrls() { return serviceUrls; }
+        public void setServiceUrls(Map<AasServiceType, AasServiceConfig> serviceUrls) { this.serviceUrls = serviceUrls; }
+
+        public String getDiscovery() {
+            if (serviceUrls.containsKey(AasServiceType.DISCOVERY)) {
+                return serviceUrls.get(AasServiceType.DISCOVERY).getServiceUrl();
+            } else {
+                return url;
+            }
+        }
+
+        public String getShellRegistry() {
+            if (serviceUrls.containsKey(AasServiceType.SHELL_REGISTRY)) {
+                return serviceUrls.get(AasServiceType.SHELL_REGISTRY).getServiceUrl();
+            } else {
+              return url;
+            }
+        }
+
+        public String getShellRepository() {
+            if (serviceUrls.containsKey(AasServiceType.SHELL_REPOSITORY)) {
+                return serviceUrls.get(AasServiceType.SHELL_REPOSITORY).getServiceUrl();
+            } else {
+                return url;
+            }
+        }
+
+        public String getSubmodelRegistry() {
+            if (serviceUrls.containsKey(AasServiceType.SUBMODEL_REGISTRY)) {
+                return serviceUrls.get(AasServiceType.SUBMODEL_REGISTRY).getServiceUrl();
+            } else {
+                return url;
+            }
+        }
+
+        public String getSubmodelRepository() {
+            if (serviceUrls.containsKey(AasServiceType.SUBMODEL_REPOSITORY)) {
+                return serviceUrls.get(AasServiceType.SUBMODEL_REPOSITORY).getServiceUrl();
+            } else {
+                return url;
+            }
+        }
 
         public static class Auth {
             private String authType;
@@ -59,4 +120,3 @@ public class AasServersConfig {
         }
     }
 }
-
