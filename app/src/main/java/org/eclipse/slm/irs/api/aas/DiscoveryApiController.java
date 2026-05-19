@@ -2,8 +2,8 @@ package org.eclipse.slm.irs.api.aas;
 
 import io.swagger.v3.oas.annotations.Hidden;
 import org.eclipse.digitaltwin.aas4j.v3.model.SpecificAssetId;
-import org.eclipse.slm.common.aas.model.discovery.AssetLink;
-import org.eclipse.slm.common.aas.model.discovery.respones.GetAasIdsByAssetLinkResults;
+import org.eclipse.slm.aas.model.discovery.AssetLink;
+import org.eclipse.slm.aas.model.discovery.respones.GetAasIdsByAssetLinkResults;
 import org.eclipse.slm.irs.exceptions.MethodNotImplementedException;
 import org.eclipse.slm.irs.exceptions.MethodNotSupportedException;
 import org.eclipse.slm.irs.services.discovery.DiscoveryService;

@@ -31,7 +31,7 @@
 
         <springdoc.openapi.version>2.8.14</springdoc.openapi.version>
         <swagger.version>2.2.22</swagger.version>
-        <common.aas.version>1.4.0-SNAPSHOT</common.aas.version>
+        <common.aas.version>1.0.0-SNAPSHOT</common.aas.version>
         <basyx.version>2.0.0-milestone-07</basyx.version>
         <feign.version>13.6</feign.version>
         <mapstruct.version>1.6.3</mapstruct.version>

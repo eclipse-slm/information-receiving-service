@@ -1,10 +1,10 @@
 package org.eclipse.slm.irs.services.submodelrepository;
 
 import org.eclipse.digitaltwin.aas4j.v3.model.Submodel;
-import org.eclipse.slm.common.aas.clients.base.FeignResponseException;
-import org.eclipse.slm.common.aas.model.shellrepository.exceptions.ShellNotFoundException;
-import org.eclipse.slm.common.aas.model.submodelrepository.exceptions.SubmodelNotFoundException;
-import org.eclipse.slm.common.aas.model.submodelrepository.responses.SubmodelQueryResult;
+import org.eclipse.slm.aas.clients.base.FeignResponseException;
+import org.eclipse.slm.aas.model.shellrepository.exceptions.ShellNotFoundException;
+import org.eclipse.slm.aas.model.submodelrepository.exceptions.SubmodelNotFoundException;
+import org.eclipse.slm.aas.model.submodelrepository.responses.SubmodelQueryResult;
 import org.eclipse.slm.irs.clients.aas.SubmodelRepositoryClientFactory;
 import org.eclipse.slm.irs.config.AasServersConfig;
 import org.slf4j.Logger;

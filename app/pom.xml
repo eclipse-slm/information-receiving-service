@@ -69,23 +69,31 @@
         <!-- AAS !-->
         <dependency>
             <groupId>org.eclipse.slm</groupId>
-            <artifactId>common.aas.model</artifactId>
+            <artifactId>aas.model</artifactId>
             <version>${common.aas.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.slm</groupId>
-            <artifactId>common.aas.repositories</artifactId>
+            <artifactId>aas.repositories</artifactId>
             <version>${common.aas.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.slm</groupId>
-            <artifactId>common.aas.clients</artifactId>
+            <artifactId>aas.clients</artifactId>
             <version>${common.aas.version}</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>central-snapshots</id>
+            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+            <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>

@@ -1,7 +1,7 @@
 package org.eclipse.slm.irs.services.shellrepository;
 
 import org.eclipse.digitaltwin.aas4j.v3.model.AssetAdministrationShell;
-import org.eclipse.slm.common.aas.model.shellrepository.exceptions.ShellNotFoundException;
+import org.eclipse.slm.aas.model.shellrepository.exceptions.ShellNotFoundException;
 import org.eclipse.slm.irs.clients.aas.ShellRepositoryClientFactory;
 import org.eclipse.slm.irs.config.AasServersConfig;
 import org.slf4j.Logger;

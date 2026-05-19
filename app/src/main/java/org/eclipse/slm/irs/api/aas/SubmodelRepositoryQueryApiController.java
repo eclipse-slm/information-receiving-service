@@ -3,8 +3,8 @@ package org.eclipse.slm.irs.api.aas;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.slm.common.aas.model.submodelrepository.responses.SubmodelQueryResult;
-import org.eclipse.slm.common.aas.repositories.api.submodels.SubmodelRepositoryQueryApi;
+import org.eclipse.slm.aas.model.submodelrepository.responses.SubmodelQueryResult;
+import org.eclipse.slm.aas.repositories.api.submodels.SubmodelRepositoryQueryApi;
 import org.eclipse.slm.irs.services.submodelrepository.SubmodelRepositoryService;
 import org.springframework.web.bind.annotation.RestController;
 

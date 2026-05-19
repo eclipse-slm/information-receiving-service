@@ -1,7 +1,8 @@
 package org.eclipse.slm.irs.clients.aas;
 
-import org.eclipse.slm.common.aas.clients.auth.AuthRequestInterceptor;
-import org.eclipse.slm.common.aas.clients.shellrepository.AasRepositoryClient;
+import org.eclipse.slm.aas.clients.auth.AuthRequestInterceptor;
+import org.eclipse.slm.aas.clients.shellrepository.AasRepositoryClient;
+import org.eclipse.slm.irs.config.AasServersConfig;
 import org.springframework.stereotype.Component;
 
 @Component

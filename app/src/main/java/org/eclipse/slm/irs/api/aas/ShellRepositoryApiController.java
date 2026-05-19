@@ -10,7 +10,7 @@ import org.eclipse.digitaltwin.aas4j.v3.model.Reference;
 import org.eclipse.digitaltwin.basyx.http.Base64UrlEncodedIdentifier;
 import org.eclipse.digitaltwin.basyx.http.pagination.Base64UrlEncodedCursor;
 import org.eclipse.digitaltwin.basyx.http.pagination.PagedResult;
-import org.eclipse.slm.common.aas.repositories.api.shells.AasRepositoryHTTPApi;
+import org.eclipse.slm.aas.repositories.api.shells.AasRepositoryHTTPApi;
 import org.eclipse.slm.irs.exceptions.MethodNotImplementedException;
 import org.eclipse.slm.irs.exceptions.MethodNotSupportedException;
 import org.eclipse.slm.irs.services.shellrepository.ShellRepositoryService;

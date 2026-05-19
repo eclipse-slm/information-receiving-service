@@ -1,7 +1,7 @@
 package org.eclipse.slm.irs.services.shellregistry;
 
 import org.eclipse.digitaltwin.aas4j.v3.model.AssetAdministrationShellDescriptor;
-import org.eclipse.slm.common.aas.model.shellregistry.exceptions.ShellDescriptorNotFoundException;
+import org.eclipse.slm.aas.model.shellregistry.exceptions.ShellDescriptorNotFoundException;
 import org.eclipse.slm.irs.clients.aas.ShellRegistryClientFactory;
 import org.eclipse.slm.irs.config.AasServersConfig;
 import org.slf4j.Logger;

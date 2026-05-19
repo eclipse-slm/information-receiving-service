@@ -15,8 +15,8 @@ import org.eclipse.digitaltwin.aas4j.v3.model.AssetAdministrationShellDescriptor
 import org.eclipse.digitaltwin.aas4j.v3.model.AssetKind;
 import org.eclipse.digitaltwin.aas4j.v3.model.Result;
 import org.eclipse.digitaltwin.aas4j.v3.model.SubmodelDescriptor;
-import org.eclipse.slm.common.aas.model.shellregistry.respones.GetAssetAdministrationShellDescriptorsResult;
-import org.eclipse.slm.common.aas.model.shellregistry.respones.GetSubmodelDescriptorsResult;
+import org.eclipse.slm.aas.model.shellregistry.respones.GetAssetAdministrationShellDescriptorsResult;
+import org.eclipse.slm.aas.model.shellregistry.respones.GetSubmodelDescriptorsResult;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;

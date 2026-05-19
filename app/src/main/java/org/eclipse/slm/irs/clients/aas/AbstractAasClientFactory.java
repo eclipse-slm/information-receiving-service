@@ -1,8 +1,8 @@
 package org.eclipse.slm.irs.clients.aas;
 
-import org.eclipse.slm.common.aas.clients.auth.ApiKeyAuthRequestInterceptor;
-import org.eclipse.slm.common.aas.clients.auth.AuthRequestInterceptor;
-import org.eclipse.slm.common.aas.clients.auth.OAuth2AuthRequestInterceptor;
+import org.eclipse.slm.aas.clients.auth.ApiKeyAuthRequestInterceptor;
+import org.eclipse.slm.aas.clients.auth.AuthRequestInterceptor;
+import org.eclipse.slm.aas.clients.auth.OAuth2AuthRequestInterceptor;
 import org.eclipse.slm.irs.config.AasServersConfig;
 import org.springframework.stereotype.Component;
 
