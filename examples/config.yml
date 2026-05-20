@@ -7,7 +7,13 @@ aas-servers:
     client-secret: "your-client-secret"
     token-url: "https://example-1.com/token"
 - name: "AASX Server 2"
-  url: "https://example-1.com/aasx-server-1"
+  url: "https://example-2.com/aasx-server-2"
   auth:
     auth-type: apikey
     api-key: "your-api-key"
+- name: "AASX Server 3"
+  url: "https://example-3.com/aasx-server-3"
+  auth:
+    auth-type: basic
+    username: "your-username"
+    password: "your-password"

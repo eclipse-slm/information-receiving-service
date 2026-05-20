@@ -1,5 +1,5 @@
 services:
-  app:
+  irs:
     image: ghcr.io/eclipse-slm/information-receiving-service/app:${IRS_VERSION}
     restart: unless-stopped
     volumes:
