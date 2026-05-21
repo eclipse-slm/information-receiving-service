@@ -1,5 +1,6 @@
 package org.eclipse.slm.irs.services.submodelregistry;
 
+import feign.codec.DecodeException;
 import org.eclipse.digitaltwin.aas4j.v3.model.SubmodelDescriptor;
 import org.eclipse.slm.aas.model.submodelregistry.exceptions.SubmodelDescriptorNotFoundException;
 import org.eclipse.slm.irs.clients.aas.SubmodelRegistryClientFactory;
@@ -37,9 +38,17 @@ public class AggregatedSubmodelRegistryService implements SubmodelRegistryServic
                     return submodelDescriptor.get();
                 }
             }
+            catch (DecodeException e) {
+                LOG.debug("Error deserializing submodel descriptor", e);
+            }
             catch (Exception e) {
-                LOG.error("Error while getting Submodel Descriptor with id {} from AAS server {}: {}", submodelId, aasServerConfig.getUrl(), e.getMessage());
-                LOG.error("Stacktrace: ", e);
+                if (e.getMessage().contains("timed out")) {
+                    LOG.error("Connection to AAS server '{}' timed out", aasServerConfig.getName());
+                }
+                else {
+                    LOG.error("Error while getting Submodel Descriptor with id {} from AAS server {}: {}", submodelId, aasServerConfig.getUrl(), e.getMessage());
+                    LOG.error("Stacktrace: ", e);
+                }
             }
         }
 

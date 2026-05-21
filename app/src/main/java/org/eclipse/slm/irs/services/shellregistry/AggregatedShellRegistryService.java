@@ -38,8 +38,13 @@ public class AggregatedShellRegistryService implements ShellRegistryService {
                 }
             }
             catch (Exception e) {
-                LOG.error("Error while getting AAS Descriptor with id {} from AAS server {}: {}", aasId, aasServerConfig.getUrl(), e.getMessage());
-                LOG.error("Stacktrace: ", e);
+                if (e.getMessage().contains("timed out")) {
+                    LOG.error("Connection to AAS server '{}' timed out", aasServerConfig.getName());
+                }
+                else {
+                    LOG.error("Error while getting AAS Descriptor with id {} from AAS server {}: {}", aasId, aasServerConfig.getUrl(), e.getMessage());
+                    LOG.error("Stacktrace: ", e);
+                }
             }
         }
 
